@@ -43,7 +43,6 @@ int watch_directory(char *directory, char *file){
                     struct inotify_event *ievent;
                     ievent = (struct inotify_event *) &buffer[k];
                     printf("wd=%d, mask=%u cookie=%u len=%u\n", ievent->wd, ievent->mask, ievent->cookie, ievent->len);
-
                     if(ievent->len){
                         printf("name=%s\n", ievent->name);
                         if(strcmp(ievent->name, file) == 0){
