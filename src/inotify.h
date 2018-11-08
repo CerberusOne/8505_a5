@@ -1,4 +1,4 @@
-#IFNDEF INOTIFY_H
+#ifndef INOTIFY_H
 #define INOTIFY_H
 
 #include <sys/inotify.h>

