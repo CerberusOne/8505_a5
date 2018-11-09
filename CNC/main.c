@@ -33,7 +33,6 @@ int main(int argc, char **argv){
     char localip[BUFFERSIZE];
     char *pcapfilter;
     unsigned char data[BUFFERSIZE];
-    struct filter Filter;
     /* make sure user has root privilege */
     if(geteuid() != 0) {
         printf("Must run as root\n");

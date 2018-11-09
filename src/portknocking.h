@@ -1,8 +1,6 @@
 #ifndef PORTKNOCKING_H
 #define PORTKNOCKING_H
 
-#include "main.h"
-
 #define TCP "tcp and ("
 #define OR " || "
 #define PORTS "port"
@@ -10,7 +8,7 @@
 #define FILTERAMOUNT 2
 #define IPTABLES(ip,protocol,port) "iptables -I INPUT -p " protocol " -s " ip " --dport " port " -j ACCEPT"
 #define TURNOFF(ip,protocol,port) "iptables -D INPUT -p " protocol "  -s " ip " --dport " port " -j ACCEPT"
-
+#include "libpcap.h"
 
 struct filter{
     int amount;

