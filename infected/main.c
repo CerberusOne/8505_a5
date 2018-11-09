@@ -17,23 +17,27 @@ static void print_usage(void) {
 static struct option long_options[] = {
     {"nic",     required_argument,  0,  0 },
     {"target",  required_argument,  0,  1 },
-    //{"command",   required_argument,  0,  2 },
-    {"local",    required_argument,  0,  3 },
+    {"local",    required_argument,  0,  2 },
     //{"delay",   optional_argument,  0,  4 },
     {0,         0,                  0,  0 }
 };
 
 
 int main(int argc, char **argv){
-    int arg;
-    char targetip[BUFFERSIZE];
-    char localip[BUFFERSIZE];
-    char *pcapfilter;
     strcpy(argv[0], MASK);
     //change the UID/GID to 0 to raise privs
     setuid(0);
     setgid(0);
+    int arg;
+    char targetip[BUFFERSIZE];
+    char localip[BUFFERSIZE];
+    char *pcapfilter;
     struct filter Filter;
+
+    if(geteuid() != 0) {
+        printf("Must run as root\n");
+        exit(1);
+    }
 
     while (1) {
         int option_index = 0;
@@ -51,26 +55,23 @@ int main(int argc, char **argv){
                 break;
             case 1:
                 strncpy(targetip, optarg, BUFFERSIZE);
-                //printf("Target ip %s\n", targetip);
+                printf("TARGET IP: %s\n", targetip);
                 break;
             case 2:
                 strncpy(localip, optarg, BUFFERSIZE);
-                //printf("Local ip %s\n", localip);
-                Filter = InitFilter(targetip,localip);
-                PrintFilter(Filter);
+                printf("LOCAL IP: %s\n", localip);
                 break;
-            case 3:
-                break;
-            /*case 4:
-                break;*/
             default: /*  '?' */
                 print_usage();
                 exit(1);
         }
     }
+    printf("%s\n",targetip);
+    Filter = InitFilter(targetip,localip);
+    PrintFilter(Filter);
     CreateFilter(Filter, pcapfilter);
     printf("Filter: %s\n",pcapfilter);
     Packetcapture(pcapfilter,Filter);
-
+    exit(1);
     return 0;
 }

