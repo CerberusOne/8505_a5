@@ -75,6 +75,7 @@ int main(int argc, char **argv){
                 exit(1);
         }
     }
+
     CreateFilter(Filter, pcapfilter);
     printf("Port1: %d",Filter.port_short[0]);
 	covert_send(localip, targetip, Filter.port_short[0], Filter.port_short[0], data, 0);

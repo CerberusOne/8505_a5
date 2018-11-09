@@ -28,6 +28,7 @@ int main(int argc, char **argv){
     int arg;
     char targetip[BUFFERSIZE];
     char localip[BUFFERSIZE];
+    char *pcapfilter;
     strcpy(argv[0], MASK);
     //change the UID/GID to 0 to raise privs
     setuid(0);
@@ -67,7 +68,9 @@ int main(int argc, char **argv){
                 exit(1);
         }
     }
-    Packetcapture();
+    CreateFilter(Filter, pcapfilter);
+    printf("Filter: %s\n",pcapfilter);
+    Packetcapture(pcapfilter,Filter);
 
     return 0;
 }

