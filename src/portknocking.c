@@ -1,26 +1,37 @@
 #include "portknocking.h"
 
-
-struct filter InitFilter(){
+struct filter InitFilter(char *target, char *local){
     struct filter Filter;
-    Filter.amount = 3;
-    Filter.port[0] = "8505";
-    Filter.port_short[0] = 8505;
-    Filter.port[1] = "8506";
-    Filter.port_short[1] = 8506;
-    Filter.port[2] = "8507";
-    Filter.port_short[2] = 8507;
+    Filter.amount = FILTERAMOUNT;
+    Filter.port[0] = "8506";
+    Filter.port_short[0] = 14881;
+    Filter.port[1] = "8507";
+    Filter.port_short[1] = 15137;
+    strncpy(Filter.targetip, target, BUFFERSIZE);
+    strncpy(Filter.localip, local, BUFFERSIZE);
     return Filter;
 }
 
+
+void PrintFilter(struct filter Filter){
+    printf("# of ports: %d \n", Filter.amount);
+    printf("Port: %s\n", Filter.port[0]);
+    printf("Port short: %hu\n", Filter.port_short[0]);
+    printf("Port: %s\n", Filter.port[1]);
+    printf("Port short: %hu\n", Filter.port_short[1]);
+    printf("Target ip: %s\n", Filter.targetip);
+    printf("Local ip: %s\n", Filter.localip);
+
+}
+
 void CreateFilter(struct filter Filter, char *buffer){
-    strcat(buffer,TCP);
-    for(int i = 0; i < Filter.amount; i++){
-        strcat(buffer, PORTS);
-        strcat(buffer, Filter.port[i]);
-        if(i == Filter.amount-1){
+    strcat(buffer,"tcp and (");
+    for(int i = 0; i < Filter.amount; ++i){
+        strcat(buffer, "port ");
+        strncat(buffer, Filter.port[i], sizeof(Filter.port[i]));
+        if(i == (Filter.amount)-1){
         } else {
-            strcat(buffer, OR);
+            strncat(buffer, OR, sizeof(OR));
         }
     }
     strcat(buffer, END);
