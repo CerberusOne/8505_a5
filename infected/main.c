@@ -2,7 +2,6 @@
 #include "../src/encrypt_utils.h"
 #include "../src/socketwrappers.h"
 #include "../src/covert_wrappers.h"
-#include "../src/portknocking.h"
 #include "../src/inotify.h"
 #include "../src/libpcap.h"
 

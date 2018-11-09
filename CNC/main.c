@@ -2,7 +2,7 @@
 #include "../src/encrypt_utils.h"
 #include "../src/socketwrappers.h"
 #include "../src/covert_wrappers.h"
-#include "../src/portknocking.h"
+//#include "../src/portknocking.h"
 #include "../src/inotify.h"
 #include "../src/libpcap.h"
 
@@ -33,6 +33,7 @@ int main(int argc, char **argv){
     char localip[BUFFERSIZE];
     char *pcapfilter;
     unsigned char data[BUFFERSIZE];
+    struct filter Filter;
     /* make sure user has root privilege */
     if(geteuid() != 0) {
         printf("Must run as root\n");
@@ -79,7 +80,7 @@ int main(int argc, char **argv){
 	covert_send(localip, targetip, Filter.port_short[0], Filter.port_short[0], data, 0);
 	//wait for port knocking
     printf("Filter: %s\n",pcapfilter);
-	Packetcapture(pcapfilter);
+	Packetcapture(pcapfilter,Filter);
     exit(1);
     return 0;
 }
