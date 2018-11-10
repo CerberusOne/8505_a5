@@ -225,6 +225,8 @@ struct filter InitFilter(char *target, char *local){
     Filter.port[1] = "8507";
     Filter.port_ushort[1] = 15137;
     Filter.port_short[1] = 8507;
+    Filter.pattern[0] = 0;
+    Filter.pattern[1] = 0;
     strncpy(Filter.targetip, target, BUFFERSIZE);
     strncpy(Filter.localip, local, BUFFERSIZE);
     return Filter;
@@ -297,11 +299,11 @@ void PortKnocking(struct filter Filter, const struct pcap_pkthdr* pkthdr, const 
             if(Filter.port_ushort[k] == tcp->th_dport){
             printf("Filter.port_ushort = %hu compare and tcp->th_dport =%hu\n", Filter.port_ushort[k], tcp->th_dport);
             Filter.pattern[k] = 1;
-            printf("Filterpattern[%d]= %d", k,Filter.pattern[k]);
+            printf("Filterpattern[%d]= %d\n", k,Filter.pattern[k]);
             }
         }
         //fix this part
-
+        printf("\n");
         printf("Filterpattern[0]= %d", Filter.pattern[0]);
         printf("Filterpattern[1]= %d", Filter.pattern[1]);
         if((Filter.pattern[0] == 1) && (Filter.pattern[1] == 1)){
