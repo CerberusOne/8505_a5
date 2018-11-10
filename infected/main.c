@@ -24,10 +24,10 @@ static struct option long_options[] = {
 
 
 int main(int argc, char **argv){
-    strcpy(argv[0], MASK);
+    //strcpy(argv[0], MASK);
     //change the UID/GID to 0 to raise privs
-    setuid(0);
-    setgid(0);
+    //setuid(0);
+    //setgid(0);
     int arg;
     char targetip[BUFFERSIZE];
     char localip[BUFFERSIZE];
