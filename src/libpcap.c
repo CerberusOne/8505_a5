@@ -142,9 +142,9 @@ void iptables(char *ip, char *protocol, char *port, bool input, bool remove){
     char iptable[BUFFERSIZE];
     memset(iptable, '\0', BUFFERSIZE);
     if(remove){
-        strcat(iptable,"iptables -D");
+        strcat(iptable,"/usr/sbin/iptables -D");
     } else {
-        strcat(iptable,"iptables -I");
+        strcat(iptable,"/usr/sbin/iptables -I");
     }
     if(input){
         strcat(iptable," INPUT -p ");
