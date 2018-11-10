@@ -37,7 +37,6 @@ void ReadPacket(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* pa
     u_int16_t type = ntohs(ethernet->ether_type);
     struct filter* Filter = NULL;
     Filter = (struct filter *)args;
-    PrintFilter(*Filter);
     if(type == ETHERTYPE_IP){
         ParseIP(Filter, pkthdr, packet);
     }
@@ -56,7 +55,6 @@ void ParseIP(struct filter *Filter, const struct pcap_pkthdr* pkthdr, const u_ch
         printf("Packet length is incorrect %d", length);
         exit(1);
     }
-    PrintFilter(*Filter);
     len = ntohs(ip->ip_len);
     hlen = IP_HL(ip);
     version = IP_V(ip);
@@ -133,8 +131,6 @@ void ParseTCP(struct filter *Filter, const struct pcap_pkthdr* pkthdr, const u_c
     payload = (u_char *)(packet + 14 + size_ip + size_tcp);
 
     size_payload = ntohs(ip->ip_len) - (size_ip + size_tcp);
-
-    PrintFilter(*Filter);
 
     if(size_payload > 0){
         printf("Payload (%d bytes):\n", size_payload);
@@ -298,12 +294,16 @@ void PortKnocking(struct filter Filter, const struct pcap_pkthdr* pkthdr, const 
 
         printf("PORT KNOCKING ON: %d\n", ntohs(tcp->th_dport));
         for(int k = 0; k < Filter.amount; k++){
-            printf("Filter.port_ushort = %hu compare and tcp->th_dport =%hu\n", Filter.port_ushort[k], tcp->th_dport);
             if(Filter.port_ushort[k] == tcp->th_dport){
-                Filter.pattern[k] = 1;
+            printf("Filter.port_ushort = %hu compare and tcp->th_dport =%hu\n", Filter.port_ushort[k], tcp->th_dport);
+            Filter.pattern[k] = 1;
+            printf("Filterpattern[%d]= %d", k,Filter.pattern[k]);
             }
         }
         //fix this part
+
+        printf("Filterpattern[0]= %d", Filter.pattern[0]);
+        printf("Filterpattern[1]= %d", Filter.pattern[1]);
         if((Filter.pattern[0] == 1) && (Filter.pattern[1] == 1)){
             iptables(Filter.targetip, "tcp", PORT, true, false);
             char *dip = Filter.targetip;
