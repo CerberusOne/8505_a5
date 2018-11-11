@@ -234,7 +234,7 @@ void PrintFilter(struct filter Filter){
 
 void CreateFilter(struct filter Filter, char *buffer){
     memset(buffer, '\0', BUFFERSIZE);
-    strcat(buffer,"tcp and (");
+    strcat(buffer,"udp and (");
     for(int i = 0; i < Filter.amount; ++i){
         strcat(buffer, "port ");
         strncat(buffer, Filter.port[i], sizeof(Filter.port[i]));
