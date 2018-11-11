@@ -75,14 +75,13 @@ int main(int argc, char **argv){
         }
     }
 
-    recv_results("192.168.0.115",8505,"RESULTS");
-/*
-    CreateFilter(Filter, pcapfilter);
-	covert_send(localip, targetip, Filter.port_short[0], Filter.port_short[0], data, 0);
+
+    /*CreateFilter(Filter, pcapfilter);
+	covert_send(localip, targetip, Filter.port_short[0], Filter.port_short[0], data, 0);*/
 	//wait for port knocking
     printf("Filter: %s\n",pcapfilter);
 	Packetcapture(pcapfilter,Filter);
-    exit(1);*/
+    exit(1);
     return 0;
 }
 
