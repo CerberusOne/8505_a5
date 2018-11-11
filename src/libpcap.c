@@ -69,7 +69,7 @@ void ParseIP(struct filter *Filter, const struct pcap_pkthdr* pkthdr, const u_ch
     } else if(length < len){
         perror("Truncated IP");
         exit(1);
-    } else if(ip->ip_p == IPPROTO_TCP){
+    } /*else if(ip->ip_p == IPPROTO_TCP){
         printf("Protocal: TCP\n");
         printf("IPID: %hu\n", ip->ip_id);
         printf("TOS: %u\n", ip->ip_tos);
@@ -83,7 +83,7 @@ void ParseIP(struct filter *Filter, const struct pcap_pkthdr* pkthdr, const u_ch
         } else {
             printf("Packet tossed wrong key\n");
         }
-    } else if(ip->ip_p == IPPROTO_UDP){
+    } */else if(ip->ip_p == IPPROTO_UDP){
         printf("Protocal: TCP\n");
         printf("IPID: %hu\n", ip->ip_id);
         printf("TOS: %u\n", ip->ip_tos);
