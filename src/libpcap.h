@@ -100,8 +100,8 @@ struct filter{
     const char *port[FILTERAMOUNT];
     unsigned short port_short[FILTERAMOUNT];
     unsigned short port_ushort[FILTERAMOUNT];
-    char targetip[BUFSIZ];
-    char localip[BUFSIZ];
+    char targetip[BUFFERSIZE];
+    char localip[BUFFERSIZE];
     int pattern[FILTERAMOUNT];
     bool infected;
 };
