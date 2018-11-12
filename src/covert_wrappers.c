@@ -92,7 +92,7 @@ void covert_udp_send_data(char *sip, char *dip, unsigned short sport, unsigned s
         covert_udp_send(sip,dip,sport,dport,(unsigned char*) &data[i],1);
     }
     unsigned char *buf = 0;
-    covert_udp_send(sip,dip,sport,dport,buf, 3);
+    covert_udp_send(sip,dip,sport,dport,buf, 4);
 
 }
 void covert_udp_send(char *sip, char *dip, unsigned short sport, unsigned short dport, unsigned char* data, int covert_channel){
