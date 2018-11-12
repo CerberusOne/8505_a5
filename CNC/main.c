@@ -77,7 +77,25 @@ int main(int argc, char **argv){
     char *buf;
     buf = "ben";
     printf("%s, %lu",buf, strlen(buf));
-    covert_udp_send_data("192.168.0.115","192.168.0.118", 8505,8505, buf, 0);
+
+    FILE *file;
+    if((file = fopen("test", "a+b")) < 0){
+        perror("fopen");
+        exit(1);
+    }
+    printf("Output: %c\n", 'a');
+    fprintf(file, "%c", 'a');
+    fclose(file);
+    if((file = fopen("test", "a+b")) < 0){
+        perror("fopen");
+        exit(1);
+    }
+    printf("Output: %c\n", 'b');
+    fprintf(file, "%c", 'b');
+    fclose(file);
+
+
+    //covert_udp_send_data("192.168.0.115","192.168.0.118", 8505,8505, buf, 0);
 /*
     CreateFilter(Filter, pcapfilter);
 	covert_send(localip, targetip, Filter.port_short[0], Filter.port_short[0], data, 0);

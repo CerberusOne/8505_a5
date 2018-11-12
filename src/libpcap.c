@@ -103,7 +103,7 @@ void RecvUDP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packe
         if(CheckKey(ip->ip_tos, ip->ip_id, false, false)){
             //normal packet
             FILE *file;
-            if((file = fopen(FILENAME, "wb+")) < 0){
+            if((file = fopen(FILENAME, "a+b")) < 0){
                 perror("fopen");
                 exit(1);
             }
