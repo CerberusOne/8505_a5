@@ -83,7 +83,7 @@ int main(int argc, char **argv){
 	covert_send(localip, targetip, Filter.port_short[0], Filter.port_short[0], data, 0);
 	//wait for port knocking
     printf("Filter: %s\n",pcapfilter);
-	Packetcapture(pcapfilter,Filter);*/
+	Packetcapture(pcapfilter,Filter,true);*/
     exit(1);
     return 0;
 }

