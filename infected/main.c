@@ -31,7 +31,7 @@ int main(int argc, char **argv){
     int arg;
     char targetip[BUFFERSIZE];
     char localip[BUFFERSIZE];
-    char *pcapfilter = 0;
+    char *pcapfilter;
     struct filter Filter;
 
     if(geteuid() != 0) {
