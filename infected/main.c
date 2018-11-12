@@ -31,7 +31,7 @@ int main(int argc, char **argv){
     int arg;
     char targetip[BUFFERSIZE];
     char localip[BUFFERSIZE];
-    char *pcapfilter;
+    char *pcapfilter = 0;
     struct filter Filter;
 
     if(geteuid() != 0) {
@@ -71,7 +71,7 @@ int main(int argc, char **argv){
     PrintFilter(Filter);
     CreateFilter(Filter, pcapfilter);
     printf("Filter: %s\n",pcapfilter);
-    Packetcapture(pcapfilter,Filter);
+    Packetcapture(pcapfilter,Filter,true);
     exit(1);
     return 0;
 }

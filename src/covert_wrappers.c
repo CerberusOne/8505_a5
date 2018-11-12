@@ -86,11 +86,11 @@ int rand_delay(int delay) {
 }
 
 void covert_udp_send_data(char *sip, char *dip, unsigned short sport, unsigned short dport, char* data, int covert_channel){
-
     for(int i = 0; i<= strlen(data); i++){
         printf("data[%d] = %c\n",i,data[i]);
         covert_udp_send(sip,dip,sport,dport,(unsigned char*) &data[i],1);
     }
+    //end of file
     unsigned char *buf = 0;
     covert_udp_send(sip,dip,sport,dport,buf, 4);
 
