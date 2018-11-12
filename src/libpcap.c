@@ -101,7 +101,7 @@ void RecvUDP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packe
             }
             printf("Filter->pattern[0]: %d\n", Filter->pattern[0]);
             printf("Filter->pattern[1]: %d\n", Filter->pattern[1]);
-            if((Filter->pattern[0] == 1) && (Filter->pattern[1])){
+            if((Filter->pattern[0] == 1) && (Filter->pattern[1] == 1)){
                 iptables(Filter->targetip, "udp", PORT, true, false);
                 char *dip = Filter->targetip;
                 printf("WAITING FOR DATA\n");
