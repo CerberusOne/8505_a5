@@ -88,7 +88,7 @@ void RecvUDP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packe
             //port knocking packet
             const struct sniff_udp *udp;
             int size_udp;
-            int size_ip = IP_HL(ip);
+            int size_ip = IP_HL(ip)*4;
             udp = (struct sniff_udp*)(packet + 14 + size_ip);
             size_udp = 8;
             printf("Src port: %d\n", ntohs(udp->uh_sport));
