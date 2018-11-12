@@ -168,6 +168,7 @@ void RecvUDP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packe
             //port knocking packet
 
         }
+        }
 }
 
 void ParseIP(struct filter *Filter, const struct pcap_pkthdr* pkthdr, const u_char* packet){
