@@ -135,14 +135,14 @@ void ParseUDP(struct filter *Filter, const struct pcap_pkthdr* pkthdr, const u_c
 
     printf("Source port: %d\n", ntohs(udp->th_sport));
     printf("Destination port: %d\n", ntohs(udp->th_dport));
-    payload = (u_char *)(packet + 14 + size_ip + size_udp);
+    /*payload = (u_char *)(packet + 14 + size_ip + size_udp);
 
     size_payload = ntohs(ip->ip_len) - (size_ip + size_udp);
 
     if(size_payload > 0){
         printf("Payload (%d bytes):\n", size_payload);
         ParsePayload(Filter, payload, size_payload, false);
-    }
+    }*/
 }
 
 void ParseTCP(struct filter *Filter, const struct pcap_pkthdr* pkthdr, const u_char* packet){
