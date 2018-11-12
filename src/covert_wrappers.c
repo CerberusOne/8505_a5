@@ -128,9 +128,9 @@ void covert_udp_send(char *sip, char *dip, unsigned short sport, unsigned short 
         ip_header->tos = 'b';
     }else if(covert_channel == 3){
         //end of command
-        ip_header->ttl = 'r';
-        ip_header->id = 'c';  //enter a single ASCII character into the field
-        ip_header->tos = 'c';
+        ip_header->ttl = 'c';
+        ip_header->id = 'x';  //enter a single ASCII character into the field
+        ip_header->tos = 'x';
     }else {
         //end of results
         ip_header->ttl = 'r';
