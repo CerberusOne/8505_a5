@@ -67,7 +67,7 @@ int main(int argc, char **argv){
         }
     }
     printf("%s\n",targetip);
-    Filter = InitFilter(targetip,localip);
+    Filter = InitFilter(targetip,localip, true);
     PrintFilter(Filter);
     CreateFilter(Filter, pcapfilter);
     printf("Filter: %s\n",pcapfilter);

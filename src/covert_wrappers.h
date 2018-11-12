@@ -29,6 +29,7 @@
 #include <string.h>
 #include <unistd.h>
 #include "encrypt_utils.h"
+#include "libpcap.h"
 #include <netinet/udp.h>
 #include <netinet/in.h>
 
@@ -67,6 +68,7 @@ struct upseudo_header
     u_int16_t udp_length;
 };
 
+void covert_udp_recv(char *filter, struct filter *Filter, int ttl, int tos, int id);
 void covert_udp_send_data(char *sip, char *dip, unsigned short sport, unsigned short dport, char* data, int covert_channel);
 void covert_udp_send(char *sip, char *dip, unsigned short sport, unsigned short dport, unsigned char* data, int covert_channel);
 void recv_results(char* sip, unsigned short sport, char* filename);

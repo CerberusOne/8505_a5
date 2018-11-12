@@ -64,7 +64,7 @@ int main(int argc, char **argv){
             case 3:
                 strncpy(localip, optarg, BUFFERSIZE);
                 //printf("Local ip %s\n", localip);
-                Filter = InitFilter(targetip,localip);
+                Filter = InitFilter(targetip,localip,true);
                 PrintFilter(Filter);
                 break;
             /*case 4:
