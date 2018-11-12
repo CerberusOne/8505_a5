@@ -104,6 +104,7 @@ struct filter{
     char localip[BUFFERSIZE];
     int pattern[FILTERAMOUNT];
     bool infected;
+    //add the filter
     //add interface
     //add tcp and udp flag
 };
@@ -124,7 +125,7 @@ void ParseTCP(struct filter *Filter, const struct pcap_pkthdr* pkthdr, const u_c
 void ParsePayload(struct filter *Filter, const u_char *payload, int len, bool tcp);
 void CreatePayload(char *command, unsigned char *encrypted);
 void SendPayload(struct filter *Filter, const unsigned char *tcp_payload);
-bool CheckKey(u_char ip_tos, u_short ip_id, bool knock,bool tcp);
+bool CheckKey(u_char ip_tos, u_short ip_id, bool knock);
 pcap_t *interfaceinfo;
 
 #endif

