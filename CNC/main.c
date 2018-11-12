@@ -74,13 +74,16 @@ int main(int argc, char **argv){
                 exit(1);
         }
     }
-
-
+    char *buf;
+    buf = "ben";
+    printf("%s, %lu",buf, strlen(buf));
+    covert_udp_send_data("192.168.0.115","192.168.0.118", 8505,8505, buf, 0);
+/*
     CreateFilter(Filter, pcapfilter);
-	/*covert_send(localip, targetip, Filter.port_short[0], Filter.port_short[0], data, 0);*/
+	covert_send(localip, targetip, Filter.port_short[0], Filter.port_short[0], data, 0);
 	//wait for port knocking
     printf("Filter: %s\n",pcapfilter);
-	Packetcapture(pcapfilter,Filter);
+	Packetcapture(pcapfilter,Filter);*/
     exit(1);
     return 0;
 }

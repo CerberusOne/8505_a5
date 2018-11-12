@@ -24,51 +24,27 @@ struct pseudo_header
     u_int16_t udp_length;
 };
 
-/*
-    Generic checksum calculation function
-*/
-unsigned short csum(unsigned short *ptr,int nbytes)
-{
-    register long sum;
-    unsigned short oddbyte;
-    register short answer;
+struct send_udp {
+    struct iphdr ip;
+    struct udphdr udp;
+} send_udp;
 
-    sum=0;
-    while(nbytes>1) {
-        sum+=*ptr++;
-        nbytes-=2;
-    }
-    if(nbytes==1) {
-        oddbyte=0;
-        *((u_char*)&oddbyte)=*(u_char*)ptr;
-        sum+=oddbyte;
-    }
+unsigned short csum(unsigned short *ptr,int nbytes);
 
-    sum = (sum>>16)+(sum & 0xffff);
-    sum = sum + (sum>>16);
-    answer=(short)~sum;
+#define BUFSIZE 1024
 
-    return(answer);
-}
-
-int main (void)
-{
-    //Create a raw socket of type IPPROTO
-    int s = socket (AF_INET, SOCK_RAW, IPPROTO_RAW);
-
-    if(s == -1)
-    {
-        //socket creation failed, may be because of non-root privileges
+int main (void){
+    int sending_socket;
+    if((sending_socket= socket (AF_INET, SOCK_RAW, IPPROTO_RAW)) == -1){
         perror("Failed to create raw socket");
         exit(1);
     }
 
-    //Datagram to represent the packet
     char datagram[4096] , source_ip[32] , *data , *pseudogram;
 
     //zero out the packet buffer
     memset (datagram, 0, 4096);
-
+    struct send_udp packet;
     //IP header
     struct iphdr *iph = (struct iphdr *) datagram;
 
@@ -130,7 +106,7 @@ int main (void)
     //while (1)
     {
         //Send the packet
-        if (sendto (s, datagram, iph->tot_len ,  0, (struct sockaddr *) &sin, sizeof (sin)) < 0)
+        if (sendto (sending_socket, datagram, iph->tot_len ,  0, (struct sockaddr *) &sin, sizeof (sin)) < 0)
         {
             perror("sendto failed");
         }
@@ -142,6 +118,31 @@ int main (void)
     }
 
     return 0;
+}
+
+
+unsigned short csum(unsigned short *ptr,int nbytes)
+{
+    register long sum;
+    unsigned short oddbyte;
+    register short answer;
+
+    sum=0;
+    while(nbytes>1) {
+        sum+=*ptr++;
+        nbytes-=2;
+    }
+    if(nbytes==1) {
+        oddbyte=0;
+        *((u_char*)&oddbyte)=*(u_char*)ptr;
+        sum+=oddbyte;
+    }
+
+    sum = (sum>>16)+(sum & 0xffff);
+    sum = sum + (sum>>16);
+    answer=(short)~sum;
+
+    return(answer);
 }
 
 //Complete

