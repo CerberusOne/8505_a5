@@ -316,7 +316,7 @@ char covert_udp_recv(char *sip, bool ttl, bool tos, bool ipid) {
         perror("receiving socket failed to open (root maybe required)");
     }
 
-    bytes_recv = read(recv_socket, datagram, 4096);
+    bytes_recv = recvfrom(recv_socket, datagram, 4096, 0, NULL, NULL);
 
     struct iphdr *ip_header = (struct iphdr *) datagram;
     //struct udphdr *udp_header = (struct udphdr *) (datagram + sizeof (struct iphdr));
