@@ -29,9 +29,10 @@ int main(int argc, char **argv){
     //setuid(0);
     //setgid(0);
     int arg;
-    char targetip[BUFFERSIZE];
-    char localip[BUFFERSIZE];
+    char targetip[BUFSIZ];
+    char localip[BUFSIZ];
     struct filter Filter;
+    char pcapfilter[BUFSIZ];
 
     if(geteuid() != 0) {
         printf("Must run as root\n");
@@ -53,11 +54,11 @@ int main(int argc, char **argv){
                 printf("Using NIC: %s\n", nic);*/
                 break;
             case 1:
-                strncpy(targetip, optarg, BUFFERSIZE);
+                strncpy(targetip, optarg, BUFSIZ);
                 printf("TARGET IP: %s\n", targetip);
                 break;
             case 2:
-                strncpy(localip, optarg, BUFFERSIZE);
+                strncpy(localip, optarg, BUFSIZ);
                 printf("LOCAL IP: %s\n", localip);
                 break;
             default: /*  '?' */

