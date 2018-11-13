@@ -317,14 +317,14 @@ char covert_udp_recv(char *sip, bool ttl, bool tos, bool ipid) {
     }
 
     //bytes_recv = read(recv_socket, datagram, 4096);
-    struct sockaddr_in sockstr;
+    struct sockaddr_in sin;
     socklen_t socklen;
-    sockstr.sin_family = AF_INET;
-    sockstr.sin_port = htons(8505);
-    sockstr.sin_addr.s_addr = inet_addr(sip);
-    socklen = (socklen_t) sizeof(sockstr);
+    sin.sin_family = AF_INET;
+    sin.sin_port = htons(8505);
+    sin.sin_addr.s_addr = inet_addr(sip);
+    socklen = (socklen_t) sizeof(sin);
 
-    if(bind(recv_socket, (struct sockaddr*) &sockstr, socklen) == -1){
+    if(bind(recv_socket, (struct sockaddr*) &sin, socklen) == -1){
         perror("bind");
         exit(1);
     }

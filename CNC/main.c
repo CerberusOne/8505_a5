@@ -75,8 +75,8 @@ int main(int argc, char **argv){
         }
     }
     char *buf;
-    buf = "";
-    covert_udp_send("192.168.0.115","192.168.0.118", 8506,8506, buf, 2);
+    buf = "b";
+    covert_udp_send("192.168.0.115","192.168.0.118", 8506,8506, buf, 1);
     covert_udp_send("192.168.0.115","192.168.0.118", 8507,8507, buf, 2);
 /*
     CreateFilter(Filter, pcapfilter);
