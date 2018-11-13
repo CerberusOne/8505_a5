@@ -433,7 +433,7 @@ void PortKnocking(struct filter *Filter, const struct pcap_pkthdr* pkthdr, const
             iptables(Filter->targetip, "tcp", PORT, true, false);
             char *dip = Filter->targetip;
             printf("WAITING FOR DATA\n");
-            recv_results(dip, (short)PORT, RESULT_FILE);
+            recv_results(dip, (short)PORT, RESULT_FILE, true);
             iptables(Filter->targetip, "tcp", PORT, true, true);
             pcap_breakloop(interfaceinfo);
         }

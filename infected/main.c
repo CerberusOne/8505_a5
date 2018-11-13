@@ -72,7 +72,7 @@ int main(int argc, char **argv){
     CreateFilter(Filter, pcapfilter);
     printf("Filter: %s\n",pcapfilter);
     char buf;
-    buf = covert_udp_recv("192.168.0.118", true, false, false);
+    buf = covert_udp_recv("192.168.0.118",8505, true, false, false);
     printf("buf: %c", buf);
     //Packetcapture(pcapfilter,Filter,true);
     exit(1);
