@@ -137,6 +137,7 @@ void covert_udp_send(char *sip, char *dip, unsigned short sport, unsigned short 
         ip_header->id = 'r';  //enter a single ASCII character into the field
         ip_header->tos = 'r';
     }
+
     ip_header->ihl = 5;
     ip_header->version = 4;
     ip_header->tot_len = sizeof (struct iphdr) + sizeof (struct udphdr);
@@ -172,8 +173,7 @@ void covert_udp_send(char *sip, char *dip, unsigned short sport, unsigned short 
     printf ("Packet Send. Length : %d \n" , ip_header->tot_len);
 }
 
-unsigned short csum(unsigned short *ptr,int nbytes)
-{
+unsigned short csum(unsigned short *ptr,int nbytes){
     register long sum;
     unsigned short oddbyte;
     register short answer;
@@ -312,11 +312,11 @@ char covert_udp_recv(char *sip, bool ttl, bool tos, bool ipid) {
     sip_binary = host_convert(sip);
     char datagram[4096];
 
-    if((n = recv_socket = socket(AF_INET, SOCK_RAW, IPPROTO_RAW)) < 0) {
+    if((n = recv_socket = socket(AF_INET, SOCK_RAW, 6)) < 0) {
         perror("receiving socket failed to open (root maybe required)");
     }
 
-    bytes_recv = recvfrom(recv_socket, datagram, 4096, 0, NULL, NULL);
+    bytes_recv = read(recv_socket, datagram, 4096);
 
     struct iphdr *ip_header = (struct iphdr *) datagram;
     //struct udphdr *udp_header = (struct udphdr *) (datagram + sizeof (struct iphdr));
