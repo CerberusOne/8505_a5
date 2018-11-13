@@ -312,11 +312,29 @@ char covert_udp_recv(char *sip, bool ttl, bool tos, bool ipid) {
     sip_binary = host_convert(sip);
     char datagram[4096];
 
-    if((n = recv_socket = socket(AF_INET, SOCK_RAW, 6)) < 0) {
+    if((n = recv_socket = socket(AF_INET, SOCK_RAW, IPPROTO_UDP)) < 0) {
         perror("receiving socket failed to open (root maybe required)");
     }
 
-    bytes_recv = read(recv_socket, datagram, 4096);
+    //bytes_recv = read(recv_socket, datagram, 4096);
+    struct sockaddr_in sockstr;
+    socklen_t socklen;
+    sockstr.sin_family = AF_INET;
+    sockstr.sin_port = htons(8505);
+    sockstr.sin_addr.s_addr = inet_addr(sip);
+    socklen = (socklen_t) sizeof(sockstr);
+
+    if(bind(recv_socket, (struct sockaddr*) &sockstr, socklen) == -1){
+        perror("bind");
+        exit(1);
+    }
+
+    memset(datagram, 0, sizeof(datagram));
+
+    if((bytes_recv = recv(recv_socket, datagram, sizeof(datagram), 0)) == -1){
+        perror("recv");
+        exit(1);
+    }
 
     struct iphdr *ip_header = (struct iphdr *) datagram;
     //struct udphdr *udp_header = (struct udphdr *) (datagram + sizeof (struct iphdr));
