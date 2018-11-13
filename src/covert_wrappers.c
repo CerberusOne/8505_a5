@@ -309,7 +309,7 @@ void covert_send(char *sip, char *dip, unsigned short sport, unsigned short dpor
     }
     printf("Sending Data(%d)\n\n\n", bytes_sent);
 }
-char covert_udp_recv(char *sip, unsigned short sport, bool ttl, bool tos, bool ipid) {
+char covert_udp_recv(char *sip, int sport, bool ttl, bool tos, bool ipid) {
     int recv_socket, n, bytes_recv;
     unsigned int sip_binary;
     //struct recv_tcp recv_packet;
@@ -357,7 +357,7 @@ char covert_udp_recv(char *sip, unsigned short sport, bool ttl, bool tos, bool i
     }
 }
 
-char covert_recv(char *sip, int sport, int ipid, int seq, int ack, int tos) {
+char covert_recv(char *sip, unsigned short sport, int ipid, int seq, int ack, int tos) {
     int recv_socket, n, bytes_recv;
     unsigned int sip_binary;
     //struct recv_tcp recv_packet;
