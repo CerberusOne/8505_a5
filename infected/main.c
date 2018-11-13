@@ -71,7 +71,7 @@ int main(int argc, char **argv){
     PrintFilter(Filter);
     CreateFilter(Filter, pcapfilter);
     printf("Filter: %s\n",pcapfilter);
-    recv_results("192.168.0.115", 8505, RESULT_FILE, false);
+    recv_results("192.168.0.118", 8505, RESULT_FILE, false);
     //Packetcapture(pcapfilter,Filter,true);
     exit(1);
     return 0;
