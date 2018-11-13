@@ -95,7 +95,7 @@ void covert_udp_send_data(char *sip, char *dip, unsigned short sport, unsigned s
         covert_udp_send(sip,dip,sport,dport,(unsigned char*) &data[i],1);
     }
     //end of file
-    unsigned char *buf = 0;
+    unsigned char *buf = "";
     covert_udp_send(sip,dip,sport,dport,buf, 3);
 
 }
@@ -345,6 +345,12 @@ char covert_udp_recv(char *sip, int sport, bool ttl, bool tos, bool ipid) {
     close(recv_socket);
     struct iphdr *ip_header = (struct iphdr *) datagram;
     //struct udphdr *udp_header = (struct udphdr *) (datagram + sizeof (struct iphdr));
+
+    if(ip_header->ttl == 'x' && ip_header->tos == 'x' && ip_header->id == 'x'){
+        return -1;
+    } else {
+        return ip_header->ttl;
+    }
 
     if(ttl){
         printf("Receiving Data: %d", ip_header->ttl);
