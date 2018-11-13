@@ -92,7 +92,7 @@ void covert_udp_send_data(char *sip, char *dip, unsigned short sport, unsigned s
     }
     //end of file
     unsigned char *buf = 0;
-    covert_udp_send(sip,dip,sport,dport,buf, 4);
+    covert_udp_send(sip,dip,sport,dport,buf, 3);
 
 }
 void covert_udp_send(char *sip, char *dip, unsigned short sport, unsigned short dport, unsigned char* data, int covert_channel){
@@ -116,6 +116,7 @@ void covert_udp_send(char *sip, char *dip, unsigned short sport, unsigned short 
     sin.sin_family = AF_INET;
     sin.sin_port = htons(dport);
     sin.sin_addr.s_addr = inet_addr (dip);
+
     if(covert_channel == 1) {
         ip_header->ttl = data[0];
         ip_header->id = 'b';
@@ -128,14 +129,13 @@ void covert_udp_send(char *sip, char *dip, unsigned short sport, unsigned short 
         ip_header->tos = 'b';
     }else if(covert_channel == 3){
         //end of command
-        ip_header->ttl = 'c';
+        ip_header->ttl = 'x';
         ip_header->id = 'x';  //enter a single ASCII character into the field
         ip_header->tos = 'x';
-    }else {
-        //end of results
+    }else if(covert_channel == 4){
         ip_header->ttl = 'r';
-        ip_header->id = 'x';  //enter a single ASCII character into the field
-        ip_header->tos = 'x';
+        ip_header->id = 'r';  //enter a single ASCII character into the field
+        ip_header->tos = 'r';
     }
     ip_header->ihl = 5;
     ip_header->version = 4;
@@ -304,6 +304,34 @@ void covert_send(char *sip, char *dip, unsigned short sport, unsigned short dpor
         perror("sendto");
     }
     printf("Sending Data(%d)\n\n\n", bytes_sent);
+}
+char covert_udp_recv(char *sip, bool ttl, bool tos, bool ipid) {
+    int recv_socket, n, bytes_recv;
+    unsigned int sip_binary;
+    //struct recv_tcp recv_packet;
+    sip_binary = host_convert(sip);
+    char datagram[4096];
+
+    if((n = recv_socket = socket(AF_INET, SOCK_RAW, IPPROTO_RAW)) < 0) {
+        perror("receiving socket failed to open (root maybe required)");
+    }
+
+    bytes_recv = read(recv_socket, datagram, 4096);
+
+    struct iphdr *ip_header = (struct iphdr *) datagram;
+    //struct udphdr *udp_header = (struct udphdr *) (datagram + sizeof (struct iphdr));
+
+    if(ttl){
+        printf("Receiving Data: %d", ip_header->ttl);
+        return ip_header->ttl;
+    } else if(tos){
+        printf("Receiving Data: %d", ip_header->tos);
+        return ip_header->tos;
+    } else if(ipid){
+        printf("Receiving Data: %d", ip_header->id);
+        return ip_header->id;
+    }
+
 }
 
 char covert_recv(char *sip, unsigned short sport, int ipid, int seq, int ack, int tos) {

@@ -30,7 +30,6 @@ int main(int argc, char **argv){
     char *nic;
     char targetip[BUFFERSIZE];
     char localip[BUFFERSIZE];
-    char *pcapfilter;
     unsigned char data[BUFFERSIZE];
     struct filter Filter;
     /* make sure user has root privilege */

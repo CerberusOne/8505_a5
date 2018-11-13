@@ -31,7 +31,6 @@ int main(int argc, char **argv){
     int arg;
     char targetip[BUFFERSIZE];
     char localip[BUFFERSIZE];
-    char *pcapfilter;
     struct filter Filter;
 
     if(geteuid() != 0) {
@@ -71,7 +70,10 @@ int main(int argc, char **argv){
     PrintFilter(Filter);
     CreateFilter(Filter, pcapfilter);
     printf("Filter: %s\n",pcapfilter);
-    Packetcapture(pcapfilter,Filter,true);
+    char buf;
+    buf = covert_udp_recv("192.168.0.118", true, false, false);
+    printf("buf: %c", buf);
+    //Packetcapture(pcapfilter,Filter,true);
     exit(1);
     return 0;
 }

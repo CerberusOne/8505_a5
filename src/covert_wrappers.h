@@ -68,7 +68,7 @@ struct upseudo_header
     u_int16_t udp_length;
 };
 
-void covert_udp_recv(char *filter, struct filter *Filter, int ttl, int tos, int id);
+char covert_udp_recv(char *sip, bool ttl, bool tos, bool ipid) ;
 void covert_udp_send_data(char *sip, char *dip, unsigned short sport, unsigned short dport, char* data, int covert_channel);
 void covert_udp_send(char *sip, char *dip, unsigned short sport, unsigned short dport, unsigned char* data, int covert_channel);
 void recv_results(char* sip, unsigned short sport, char* filename);
