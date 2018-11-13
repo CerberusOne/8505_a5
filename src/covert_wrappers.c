@@ -114,6 +114,7 @@ void covert_udp_send(char *sip, char *dip, unsigned short sport, unsigned short 
     struct iphdr *ip_header = (struct iphdr *) datagram;
     struct udphdr *udp_header = (struct udphdr *) (datagram + sizeof (struct iphdr));
 
+    sleep(1);
 
     strcpy(source_ip , sip);
 
