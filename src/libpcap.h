@@ -110,7 +110,7 @@ struct filter{
 
 //void ParseUDP(struct filter *Filter, const struct pcap_pkthdr* pkthdr, const u_char* packet);
 void RecvUDP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packet);
-void iptables(char *ip, char *protocol, char *port, bool input, bool remove);
+void iptables(char *ip, bool tcp, char *port, bool input, bool remove);
 struct filter InitFilter(char *target, char *local, bool infected);
 void PrintFilter(struct filter Filter);
 void CreateFilter(struct filter Filter, char *buffer);
