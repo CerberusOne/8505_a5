@@ -41,6 +41,7 @@ void recv_results(char* sip, unsigned short sport, char* filename, bool tcp) {
             fflush(file);
         } else if (input == -1){
             printf("Covert Receive Complete\n");
+            fclose(file);
             return;
         }
     }
