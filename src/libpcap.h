@@ -108,7 +108,6 @@ struct filter{
     //add tcp and udp flag
 };
 
-//void ParseUDP(struct filter *Filter, const struct pcap_pkthdr* pkthdr, const u_char* packet);
 void RecvUDP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packet);
 void iptables(char *ip, bool tcp, char *port, bool input, bool remove);
 struct filter InitFilter(char *target, char *local, bool infected);

