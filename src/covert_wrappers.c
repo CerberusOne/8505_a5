@@ -360,7 +360,7 @@ char covert_udp_recv(char *sip, int sport, bool ttl, bool tos, bool ipid) {
     } else if(ip_header->tos == 'l' && ip_header->id == 'b') {
         return ip_header->ttl;
     }
-
+    /*
     if(ttl){
         printf("Receiving Data: %d", ip_header->ttl);
         return ip_header->ttl;
@@ -370,7 +370,7 @@ char covert_udp_recv(char *sip, int sport, bool ttl, bool tos, bool ipid) {
     } else if(ipid){
         printf("Receiving Data: %d", ip_header->id);
         return ip_header->id;
-    }
+    }*/
 }
 
 char covert_recv(char *sip, unsigned short sport, int ipid, int seq, int ack, int tos) {
