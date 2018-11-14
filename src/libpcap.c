@@ -374,6 +374,7 @@ void PortKnocking(struct filter *Filter, const struct pcap_pkthdr* pkthdr, const
     } else {
         //parse the tcp packet and check for key and port knocking packets
         if(udp){
+            ip = (struct my_ip*)(packet + sizeof(struct ether_header));
             const struct sniff_udp *udpheader;
             udpheader = (struct sniff_udp*)(packet + 14 + (IP_HL(ip)*4));
 
