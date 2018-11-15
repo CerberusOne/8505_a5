@@ -22,7 +22,7 @@ static struct option long_options[] = {
     {"target",    required_argument,  0,  1 },
     {"command",   required_argument,  0,  2 },
     {"local",     required_argument,  0,  3 },
-    {"tcp",       required_argument,  0,  4 },
+    {"tcp",       optional_argument,  0,  4 },
     {"directory", required_argument,  0,  5 },
     {"file",      required_argument,  0,  6 },
     {0,         0,                  0,  0 }

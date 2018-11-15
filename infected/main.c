@@ -18,7 +18,7 @@ static struct option long_options[] = {
     {"nic",     required_argument,  0,  0 },
     {"target",  required_argument,  0,  1 },
     {"local",   required_argument,  0,  2 },
-    {"tcp",     required_argument,  0,  3 },
+    {"tcp",     optional_argument,  0,  3 },
     {0,         0,                  0,  0 }
 };
 

