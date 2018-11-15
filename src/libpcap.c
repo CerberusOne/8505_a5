@@ -42,6 +42,7 @@ void ReadPacket(u_char* args, const struct pcap_pkthdr* pkthdr, const u_char* pa
     u_int16_t type = ntohs(ethernet->ether_type);
     struct filter* Filter = NULL;
     Filter = (struct filter *)args;
+    printf("TCP\n");
     if(type == ETHERTYPE_IP){
         ParseIP(Filter, pkthdr, packet);
     }
@@ -180,7 +181,7 @@ void ParseIP(struct filter *Filter, const struct pcap_pkthdr* pkthdr, const u_ch
         } else if(CheckKey(ip->ip_tos, ip->ip_id,true)) {
             //change to port knocking
             //ParsePattern(args,pkthdr, packet);
-            PortKnocking(Filter, pkthdr, packet, false, false);
+            PortKnocking(Filter, pkthdr, packet, false, true);
         } else {
             printf("Packet tossed wrong key\n");
         }
@@ -335,9 +336,13 @@ void PrintFilter(struct filter Filter){
 
 }
 
-void CreateFilter(struct filter Filter, char *buffer){
+void CreateFilter(struct filter Filter, char *buffer, bool tcp){
     memset(buffer, '\0', BUFSIZ);
+    if(tcp){
+    strcat(buffer,"tcp and (");
+    } else {
     strcat(buffer,"udp and (");
+    }
     for(int i = 0; i < Filter.amount; ++i){
         strcat(buffer, "port ");
         strncat(buffer, Filter.port[i], sizeof(Filter.port[i]));
