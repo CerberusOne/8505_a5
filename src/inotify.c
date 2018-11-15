@@ -17,12 +17,18 @@ int addWatch(int socket, char *directory){
     return watch;
 }
 
-int watch_directory(char *directory, char *file){
+void *watch_directory(void* args){
+    inotify_struct *arg = args;
+    char directory[BUFSIZ];
+    char file[BUFSIZ];
     int socket, watch, epollfd;
     struct epoll_event event;
     struct epoll_event *events;
     char buffer[BUFLEN];
     int k, len;
+
+    strncpy(directory, arg->directory, BUFSIZ);
+    strncpy(file, arg->file, BUFSIZ);
 
     socket = initInotify();
     watch = addWatch(socket, directory);
@@ -46,7 +52,11 @@ int watch_directory(char *directory, char *file){
                     if(ievent->len){
                         printf("name=%s\n", ievent->name);
                         if(strcmp(ievent->name, file) == 0){
-                            printf("File was created exiting\n");
+                            char filename[BUFSIZ];
+                            strcat(filename, directory);
+                            strcat(filename, file);
+                            send_results(arg->localip, arg->targetip, 8508, 8508, filename, arg->tcp);
+                            printf("File was created:w exiting\n");
                             close(socket);
                             free(events);
                             exit(1);
@@ -63,3 +73,9 @@ int watch_directory(char *directory, char *file){
     }
     free(events);
 }
+
+void *recv_watch_directory(void* args){
+    recv
+}
+
+

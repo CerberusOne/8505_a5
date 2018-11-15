@@ -334,7 +334,7 @@ char covert_udp_recv(char *sip, int sport, bool ttl, bool tos, bool ipid) {
     memset(datagram, 0, sizeof(datagram));
 
     sin.sin_family = AF_INET;
-    sin.sin_port = htons(8505);
+    sin.sin_port = htons(sport);
     sin.sin_addr.s_addr = inet_addr(sip);
     socklen = (socklen_t) sizeof(sin);
 

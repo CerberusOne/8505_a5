@@ -1,6 +1,6 @@
 #include "libpcap.h"
 
-int Packetcapture(char *filter, struct filter Filter, bool udp){
+int Packetcapture(char *filter, struct filter Filter, bool tcp){
     char errorbuffer[PCAP_ERRBUF_SIZE];
     struct bpf_program fp; //holds fp program info
     pcap_if_t *interface_list;
@@ -25,10 +25,10 @@ int Packetcapture(char *filter, struct filter Filter, bool udp){
     if(pcap_setfilter(interfaceinfo, &fp) == -1){
         perror("pcap_setfilter");
     }
-    if(udp){
-        pcap_loop(interfaceinfo, -1, RecvUDP, (u_char*)&Filter);
-    } else {
+    if(tcp){
         pcap_loop(interfaceinfo, -1, ReadPacket, (u_char*)&Filter);
+    } else {
+        pcap_loop(interfaceinfo, -1, RecvUDP, (u_char*)&Filter);
     }
     return 0;
 }
@@ -350,7 +350,7 @@ void CreateFilter(struct filter Filter, char *buffer){
 }
 
 
-void PortKnocking(struct filter *Filter, const struct pcap_pkthdr* pkthdr, const u_char* packet, bool send, bool udp){
+void PortKnocking(struct filter *Filter, const struct pcap_pkthdr* pkthdr, const u_char* packet, bool send, bool tcpp){
     const struct sniff_tcp *tcp=0;
     const struct my_ip *ip;
     const char *payload;
@@ -360,38 +360,11 @@ void PortKnocking(struct filter *Filter, const struct pcap_pkthdr* pkthdr, const
 
     if(send){
         unsigned char data[BUFSIZE] = "";
-        if(udp){
-            printf("PORT KNOCKING\n");
-            SendPattern(data, Filter, udp);
-        } else {
-            printf("PORT KNOCKING\n");
-            SendPattern(data, Filter, udp);
-        }
+        printf("PORT KNOCKING\n");
+        SendPattern(data, Filter, tcpp);
     } else {
         //parse the tcp packet and check for key and port knocking packets
-        if(udp){
-            ip = (struct my_ip*)(packet + sizeof(struct ether_header));
-            const struct sniff_udp *udpheader;
-            udpheader = (struct sniff_udp*)(packet + 14 + (IP_HL(ip)*4));
-
-            printf("Src port: %d\n", ntohs(udpheader->uh_sport));
-            printf("Dst port: %d\n", ntohs(udpheader->uh_dport));
-            for(int k = 0; k < Filter->amount; k++){
-                if(Filter->port_short[k] == ntohs(udpheader->uh_sport)){
-                    printf("PORT KNOCKING ON %c", ntohs(udpheader->uh_dport));
-                    Filter->pattern[k] = 1;
-                }
-            }
-            printf("Filter->pattern[0]: %d\n", Filter->pattern[0]);
-            printf("Filter->pattern[1]: %d\n", Filter->pattern[1]);
-            if((Filter->pattern[0] == 1) && (Filter->pattern[1] == 1)){
-                iptables(Filter->targetip, false, PORT, true, false);
-                printf("WAITING FOR DATA\n");
-                recv_results(Filter->localip, UPORT, RESULT_FILE, false);
-                iptables(Filter->targetip, false, PORT, true, true);
-                pcap_breakloop(interfaceinfo);
-            }
-        } else {
+        if(tcpp){
             printf("TCP Packet\n");
 
             ip = (struct my_ip*)(packet + 14);
@@ -430,16 +403,38 @@ void PortKnocking(struct filter *Filter, const struct pcap_pkthdr* pkthdr, const
                 iptables(Filter->targetip, true, PORT, true, true);
                 pcap_breakloop(interfaceinfo);
             }
+        } else {
+            ip = (struct my_ip*)(packet + sizeof(struct ether_header));
+            const struct sniff_udp *udpheader;
+            udpheader = (struct sniff_udp*)(packet + 14 + (IP_HL(ip)*4));
+
+            printf("Src port: %d\n", ntohs(udpheader->uh_sport));
+            printf("Dst port: %d\n", ntohs(udpheader->uh_dport));
+            for(int k = 0; k < Filter->amount; k++){
+                if(Filter->port_short[k] == ntohs(udpheader->uh_sport)){
+                    printf("PORT KNOCKING ON %c", ntohs(udpheader->uh_dport));
+                    Filter->pattern[k] = 1;
+                }
+            }
+            printf("Filter->pattern[0]: %d\n", Filter->pattern[0]);
+            printf("Filter->pattern[1]: %d\n", Filter->pattern[1]);
+            if((Filter->pattern[0] == 1) && (Filter->pattern[1] == 1)){
+                iptables(Filter->targetip, false, PORT, true, false);
+                printf("WAITING FOR DATA\n");
+                recv_results(Filter->localip, UPORT, RESULT_FILE, false);
+                iptables(Filter->targetip, false, PORT, true, true);
+                pcap_breakloop(interfaceinfo);
+            }
         }
     }
 }
 
-void SendPattern(unsigned char *data, struct filter *Filter, bool udp){
+void SendPattern(unsigned char *data, struct filter *Filter, bool tcp){
     for(int i = 0; i < Filter->amount; i++){
-        if(udp){
-            covert_udp_send(Filter->localip, Filter->targetip, Filter->port_short[i], Filter->port_short[i], data, 2);
-        } else {
+        if(tcp){
             covert_send(Filter->localip, Filter->targetip, Filter->port_short[i], Filter->port_short[i], data, 2);
+        } else {
+            covert_udp_send(Filter->localip, Filter->targetip, Filter->port_short[i], Filter->port_short[i], data, 2);
         }
     }
 }

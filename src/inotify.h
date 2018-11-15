@@ -7,11 +7,22 @@
 #include <stdio.h>
 #include <errno.h>
 #include "epoll.h"
+#include "covert_wrappers.h"
+#include <stdbool.h>
 
 #define EVENT_SIZE (sizeof (struct inotify_event))
 #define BUFLEN (1024 * (EVENT_SIZE + 16))
 
-int watch_directory(char *directory, char *file);
+typedef struct {
+    char directory[BUFSIZ];
+    char file[BUFSIZ];
+    char targetip[BUFSIZ];
+    char localip[BUFSIZ];
+    bool tcp;
+} inotify_struct;
+
+void *watch_directory(void* args);
+void *recv_watch_directory(void* args);
 int initInotify();
 int addWatch(int socket, char *directory);
 
