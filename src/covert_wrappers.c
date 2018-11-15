@@ -362,10 +362,10 @@ char covert_udp_recv(char *sip, int sport, bool ttl, bool tos, bool ipid) {
     close(recv_socket);
     struct iphdr *ip_header = (struct iphdr *) datagram;
     struct udphdr *udp_header = (struct udphdr *) (datagram + sizeof(struct iphdr));
-    printf("port: %c", ntohs(udp_header->dest));
-    if(ip_header->ttl == 'x' && ip_header->tos == 'x' && ip_header->id == 'x'){
+    printf("port: %d\n", ntohs(udp_header->dest));
+    if(ip_header->ttl == 'x' && ip_header->tos == 'x' && ip_header->id == 'x' && ntohs(udp_header->dest) == sport){
         return -1;
-    } else if(ip_header->tos == 'l' && ip_header->id == 'b') {
+    } else if(ip_header->tos == 'l' && ip_header->id == 'b' && ntohs(udp_header->dest) == sport) {
         return ip_header->ttl;
     }
     /*
