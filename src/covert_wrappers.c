@@ -101,8 +101,10 @@ int rand_delay(int delay) {
 
 void covert_udp_send_data(char *sip, char *dip, unsigned short sport, unsigned short dport, char* data, int covert_channel){
     unsigned char *buf = 0;
+    if(covert_channel == 1){
     covert_udp_send(sip,dip,sport,dport,(unsigned char*) buf,4);
     sleep(1);
+    }
 
     for(int i = 0; i<= (int)strlen(data); i++){
         printf("data[%d] = %c\n",i,data[i]);
@@ -135,7 +137,12 @@ void covert_udp_send(char *sip, char *dip, unsigned short sport, unsigned short 
     sin.sin_port = htons(dport);
     sin.sin_addr.s_addr = inet_addr (dip);
 
-    if(covert_channel == 1) {
+    if(covert_channel == 0) {
+        ip_header->ttl = data[0];
+        ip_header->id = 'b';
+        printf("sending: %c\n", data[0]);
+        ip_header->tos = 'l';
+    }else if(covert_channel == 1) {
         ip_header->ttl = data[0];
         ip_header->id = 'b';
         printf("sending: %c\n", data[0]);
