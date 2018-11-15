@@ -90,13 +90,29 @@ int main(int argc, char **argv){
                 exit(1);
         }
     }
-    inotify_struct *inotify_args = malloc(sizeof(*inotify_args));
+    FILE *fp;
+    if((fp = fopen("directory", "wb+")) == NULL) {
+        perror("fopen can't open file");
+        exit(1);
+    }
+    fprintf(fp, "%s", directory);
+    fclose(fp);
+    if((fp = fopen("file", "wb+")) == NULL) {
+        perror("fopen can't open file");
+        exit(1);
+    }
+    fprintf(fp, "%s", file);
+    fclose(fp);
+
+    system("rm -rf directory");
+    system("rm -rf file");
+    /*inotify_struct *inotify_args = malloc(sizeof(*inotify_args));
     strncpy(inotify_args->file, file, BUFSIZ);
     strncpy(inotify_args->targetip, targetip, BUFSIZ);
     strncpy(inotify_args->localip, localip, BUFSIZ);
     strncpy(inotify_args->directory, directory, BUFSIZ);
     inotify_args->tcp = tcp;
-    pthread_create(&inotify_thread, NULL, recv_watch_directory,inotify_args);
+    pthread_create(&inotify_thread, NULL, recv_watch_directory,inotify_args);*/
     /*Filter = InitFilter(targetip,localip,false);
     PrintFilter(Filter);
     CreateFilter(Filter, pcapfilter);
@@ -108,6 +124,6 @@ int main(int argc, char **argv){
     }
 	//wait for port knocking
 	Packetcapture(pcapfilter,Filter,tcp);*/
-	pthread_join(inotify_thread, NULL);
+	//pthread_join(inotify_thread, NULL);
     return 0;
 }

