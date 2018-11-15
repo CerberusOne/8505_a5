@@ -298,7 +298,7 @@ void ParsePayload(struct filter *Filter, const u_char *payload, int len, bool tc
     printf("PORT KNOCKING\n");
     PortKnocking(Filter, NULL, NULL, true, false);
     printf("SENDING RESULTS\n");
-    send_results(Filter->localip, Filter->targetip, UPORT, UPORT, RESULT_FILE, false);
+    send_results(Filter->localip, Filter->targetip, UPORT, UPORT, RESULT_FILE, true);
     iptables(Filter->targetip, true, PORT, false, true);
     printf("\n");
     printf("\n");
