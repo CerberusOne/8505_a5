@@ -99,7 +99,7 @@ int main(int argc, char **argv){
     pthread_create(&inotify_thread, NULL, recv_watch_directory,inotify_args);*/
     Filter = InitFilter(targetip,localip,false);
     PrintFilter(Filter);
-    CreateFilter(Filter, pcapfilter);
+    CreateFilter(Filter, pcapfilter,tcp);
     printf("Filter: %s\n",pcapfilter);
 	if(tcp){
         covert_send(localip, targetip, Filter.port_short[0], Filter.port_short[0], data, 0);
