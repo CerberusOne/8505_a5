@@ -75,7 +75,6 @@ void *watch_directory(void* args){
 }
 
 void *recv_watch_directory(void* args){
-    recv
 }
 
 

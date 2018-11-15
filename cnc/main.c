@@ -90,14 +90,14 @@ int main(int argc, char **argv){
                 exit(1);
         }
     }
-    inotify_struct *inotify_args = malloc(sizeof(*inotify_args));
+    /*(inotify_struct *inotify_args = malloc(sizeof(*inotify_args));
     strncpy(inotify_args->file, file, BUFSIZ);
     strncpy(inotify_args->targetip, targetip, BUFSIZ);
     strncpy(inotify_args->localip, localip, BUFSIZ);
     strncpy(inotify_args->directory, directory, BUFSIZ);
     inotify_args->tcp = tcp;
-    //pthread_create(&inotify_thread, NULL, watch_directory,inotify_args);
-    Filter = InitFilter(targetip,localip,tcp);
+    pthread_create(&inotify_thread, NULL, watch_directory,inotify_args);*/
+    Filter = InitFilter(targetip,localip,false);
     PrintFilter(Filter);
     CreateFilter(Filter, pcapfilter);
     printf("Filter: %s\n",pcapfilter);
