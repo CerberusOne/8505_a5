@@ -74,13 +74,14 @@ int main(int argc, char **argv){
                 exit(1);
         }
     }
+
     CreateFilter(Filter, pcapfilter);
 	//covert_send(localip, targetip, Filter.port_short[0], Filter.port_short[0], data, 0);
 	//wait for port knocking
     printf("Filter: %s\n",pcapfilter);
     covert_udp_send_data(Filter.localip, Filter.targetip, UPORT, UPORT, data, 1);
 	Packetcapture(pcapfilter,Filter,true);
-    exit(1);
+
     return 0;
 }
 

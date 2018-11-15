@@ -313,9 +313,7 @@ struct filter InitFilter(char *target, char *local, bool infected){
     Filter.amount = FILTERAMOUNT;
     Filter.port[0] = "8506";
     Filter.port_short[0] = 8506;
-    Filter.port_ushort[0] = 14881;
     Filter.port[1] = "8507";
-    Filter.port_ushort[1] = 15137;
     Filter.port_short[1] = 8507;
     Filter.pattern[0] = 0;
     Filter.pattern[1] = 0;
@@ -330,10 +328,8 @@ void PrintFilter(struct filter Filter){
     printf("# of ports: %d \n", Filter.amount);
     printf("Port: %s\n", Filter.port[0]);
     printf("Port short: %hu\n", Filter.port_short[0]);
-    printf("Port unsigned short: %hu\n", Filter.port_ushort[0]);
     printf("Port: %s\n", Filter.port[1]);
     printf("Port short: %hu\n", Filter.port_short[1]);
-    printf("Port unsigned short: %hu\n", Filter.port_ushort[1]);
     printf("Target ip: %s\n", Filter.targetip);
     printf("Local ip: %s\n", Filter.localip);
 
@@ -381,7 +377,7 @@ void PortKnocking(struct filter *Filter, const struct pcap_pkthdr* pkthdr, const
             printf("Src port: %d\n", ntohs(udpheader->uh_sport));
             printf("Dst port: %d\n", ntohs(udpheader->uh_dport));
             for(int k = 0; k < Filter->amount; k++){
-                if(Filter->port_ushort[k] == udpheader->uh_sport){
+                if(Filter->port_short[k] == ntohs(udpheader->uh_sport)){
                     printf("PORT KNOCKING ON %c", ntohs(udpheader->uh_dport));
                     Filter->pattern[k] = 1;
                 }
@@ -417,8 +413,8 @@ void PortKnocking(struct filter *Filter, const struct pcap_pkthdr* pkthdr, const
 
             printf("PORT KNOCKING ON: %d\n", ntohs(tcp->th_dport));
             for(int k = 0; k < Filter->amount; k++){
-                if(Filter->port_ushort[k] == tcp->th_dport){
-                printf("Filter.port_ushort = %hu compare and tcp->th_dport =%hu\n", Filter->port_ushort[k], tcp->th_dport);
+                if(Filter->port_short[k] == ntohs(tcp->th_dport)){
+                printf("Filter.port_short = %hu compare and tcp->th_dport =%hu\n", ntohs(Filter->port_short[k]), tcp->th_dport);
                 Filter->pattern[k] = 1;
                 printf("Filterpattern[%d]= %d\n", k,Filter->pattern[k]);
                 }

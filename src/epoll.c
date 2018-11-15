@@ -92,6 +92,7 @@ int waitForEpollEvent(const int epollfd, struct epoll_event *events) {
 }
 
 
+/*
 //splice from one file descriptor to another
 void spliceTo(int source, int destination, int pipefd[2]){
     int getBytes;
@@ -128,7 +129,6 @@ void spliceTo(int source, int destination, int pipefd[2]){
     }
 }
 
-/*
 void NewConnection(int socket, int epollfd){
     struct epoll_event event;
     socklen_t sin_size;
