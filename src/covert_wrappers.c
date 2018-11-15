@@ -195,7 +195,6 @@ void covert_udp_send(char *sip, char *dip, unsigned short sport, unsigned short 
     if (sendto (sending_socket, datagram, ip_header->tot_len ,  0, (struct sockaddr *) &sin, sizeof (sin)) < 0){
         perror("sendto failed");
     }
-    printf ("Packet Send. Length : %d \n" , ip_header->tot_len);
 }
 
 unsigned short csum(unsigned short *ptr,int nbytes){
