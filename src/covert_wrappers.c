@@ -396,7 +396,7 @@ char covert_recv(char *sip, unsigned short sport, int ipid, int seq, int ack, in
     //check if we received an EOT (end of transmission) char or normal char
     if(recv_tcp.ip.id == 4) {
         return -1;
-    } else {
+    } else if(recv_tcp.tcp.source == sport){
         return recv_tcp.ip.id;
     }
 
