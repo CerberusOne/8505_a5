@@ -72,16 +72,15 @@ int main(int argc, char **argv){
         }
     }
 
-    /*inotify_struct *inotify_args = malloc(sizeof(*inotify_args));
+    inotify_struct *inotify_args = malloc(sizeof(*inotify_args));
     strncpy(inotify_args->targetip, targetip, BUFSIZ);
     strncpy(inotify_args->localip, localip, BUFSIZ);
     inotify_args->tcp = tcp;
-    pthread_create(&inotify_thread, NULL, watch_directory,inotify_args);*/
+    pthread_create(&inotify_thread, NULL, watch_directory,inotify_args);
     Filter = InitFilter(targetip,localip, true);
-    PrintFilter(Filter);
     CreateFilter(Filter, pcapfilter,tcp);
     printf("Filter: %s\n",pcapfilter);
     Packetcapture(pcapfilter,Filter,tcp);
-	//pthread_join(inotify_thread, NULL);
+	pthread_join(inotify_thread, NULL);
     return 0;
 }
