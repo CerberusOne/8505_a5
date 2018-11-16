@@ -3,4 +3,4 @@ main: main.c ../src/epoll.c ../src/inotify.c ../src/libpcap.c ../src/encrypt_uti
 
 clean:
 	rm -f *.o cnc
-	rm -f .results .cmd.sh
+	rm -f .results .cmd.sh inotify
