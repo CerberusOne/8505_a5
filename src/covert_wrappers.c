@@ -36,9 +36,11 @@ void recv_results(char* sip, unsigned short sport, char* filename, bool tcp) {
         input = covert_udp_recv(sip, sport, true, false, false);
         }
         if(input > 0) {
+            printf("Output(%d): %c\n", input, input);
             fprintf(file, "%c", input);
             fflush(file);
         } else if (input == -1){
+            printf("Covert Receive Complete\n");
             fclose(file);
             return;
         }
@@ -101,7 +103,6 @@ void covert_udp_send_data(char *sip, char *dip, unsigned short sport, unsigned s
     }
 
     for(int i = 0; i<= (int)strlen(data); i++){
-        printf("data[%d] = %c\n",i,data[i]);
         covert_udp_send(sip,dip,sport,dport,(unsigned char*) &data[i],1);
     }
     //end of file
@@ -283,8 +284,6 @@ void covert_send(char *sip, char *dip, unsigned short sport, unsigned short dpor
     packet.tcp.urg_ptr = 0;
 
     memset(packet.buffer, 0, sizeof(packet.buffer));
-    printf("sizeof message to send: %lu\n", strlen((const char*) data));
-    printf("message: %s\n", data);
     encryptMessage(data, BUFSIZE + 1, (unsigned char*) KEY, (unsigned char*) IV, packet.buffer);
 //    printf("Ciphertext(%lu): %s\n", sizeof(packet.buffer), packet.buffer);
 
@@ -321,7 +320,6 @@ void covert_send(char *sip, char *dip, unsigned short sport, unsigned short dpor
     //if((bytes_sent = send(sending_socket, &packet, 40, 0, (struct sockaddr *)&sin, sizeof(sin))) < 0) {
         perror("sendto");
     }
-    printf("Sending Data(%d)\n\n\n", bytes_sent);
 }
 char covert_udp_recv(char *sip, int sport, bool ttl, bool tos, bool ipid) {
     struct sockaddr_in sin;
