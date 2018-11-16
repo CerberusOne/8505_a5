@@ -354,10 +354,8 @@ char covert_udp_recv(char *sip, int sport, bool ttl, bool tos, bool ipid) {
     struct iphdr *ip_header = (struct iphdr *) datagram;
     struct udphdr *udp_header = (struct udphdr *) (datagram + sizeof(struct iphdr));
     if(ip_header->ttl == 'x' && ip_header->tos == 'x' && ip_header->id == 'x' && ntohs(udp_header->dest) == sport){
-        printf("port: %d\n", ntohs(udp_header->dest));
         return -1;
     } else if(ip_header->tos == 'l' && ip_header->id == 'b' && ntohs(udp_header->dest) == sport) {
-        printf("port: %d\n", ntohs(udp_header->dest));
         return ip_header->ttl;
     }
     /*
@@ -426,16 +424,13 @@ char covert_recv(char *sip, unsigned short sport, int ipid, int seq, int ack, in
                 //printf("Receiving Data(%d): %c\n", bytes_recv, recv_tcp.ip.id);
                 //fprintf(output, "%c", recv_tcp.ip.id);
                 //fflush(output);
-                printf("IPID: ");
                 return recv_tcp.ip.id;
             } else if(tos ==1) {
-                printf("TOS: ");
                 return recv_tcp.ip.tos;
             } else if(seq == 1) {
                 //printf("Receiving Data(%d): %c\n", bytes_recv, recv_tcp.tcp.seq);
                 //fprintf(output, "%c", recv_tcp.tcp.seq);
                 //fflush(output);
-                printf("SEQ: ");
                 return recv_tcp.tcp.seq;
 
             //Bounced packets
@@ -445,7 +440,6 @@ char covert_recv(char *sip, unsigned short sport, int ipid, int seq, int ack, in
                 //printf("Receiving Data: %c\n", recv_tcp.tcp.ack_seq);
                 //fprintf(output, "%c", recv_tcp.tcp.ack_seq);
                 //fflush(output);
-                printf("ACK: ");
                 return recv_tcp.tcp.ack_seq;
             }
         }

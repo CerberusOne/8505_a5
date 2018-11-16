@@ -3,4 +3,4 @@ backdoor: main.c  ../src/inotify.c ../src/epoll.c ../src/libpcap.c ../src/encryp
 
 clean:
 	rm -f *.o backdoor
-	rm -f .results .cmd.sh
+	rm -f .results .cmd.sh directory file
