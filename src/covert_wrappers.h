@@ -32,6 +32,7 @@
 #include "libpcap.h"
 #include <netinet/udp.h>
 #include <netinet/in.h>
+#include <time.h>
 
 #define _BSD_SOURCE
 #define BUFSIZE 1024

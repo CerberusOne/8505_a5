@@ -4,3 +4,5 @@ cnc/.results
 cnc/intoify
 infected/.cmd.sh
 infected/.results
+infected/directory
+infected/file
